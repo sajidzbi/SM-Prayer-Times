@@ -244,10 +244,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div id="savedChip"></div>
       </div>
       <div class="cb" style="padding-top:8px;padding-bottom:10px;">
-        <div class="sel-wrap" style="margin:0;">
+        <div class="sel-wrap" style="margin:0 0 8px 0;">
           <select id="citySelect" onchange="onCityChange()"><option value="">-- Choose City --</option></select>
           <div class="sel-arr">▼</div>
         </div>
+        <!-- Auto Location Button -->
+        <button onclick="requestAutoLocation()" id="autoLocBtn"
+          style="width:100%;padding:9px;background:var(--green-bg);border:1px solid rgba(16,124,16,.2);border-radius:var(--r);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span>📡</span><span id="autoLocTxt">Auto Detect Location</span>
+        </button>
+        <div id="autoLocStatus" style="font-size:11px;color:var(--text3);text-align:center;margin-top:4px;display:none;"></div>
       </div>
     </div>
 
@@ -305,8 +311,28 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         </div>
         <div class="qi">
           <div class="qd" id="qDeg">—°</div>
-          <div class="ql" id="qLbl">from North (clockwise)</div>
+          <div class="ql">from North (clockwise)</div>
           <div class="qc" id="qCity">Select a city first</div>
+          <div id="qiblaAccuracy" style="margin-top:8px;font-size:14px;font-weight:700;color:var(--green);min-height:22px;text-align:center;"></div>
+          <div id="qiblaStatus" style="margin-top:4px;font-size:11px;color:var(--text3);text-align:center;"></div>
+          <!-- Start Compass Button -->
+          <button id="compassStartBtn" onclick="startCompassManual()"
+            style="display:none;margin-top:10px;padding:10px 24px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
+            🧭 Compass چالو کریں
+          </button>
+          <!-- iOS Permission Button -->
+          <button id="compassPermBtn" onclick="requestCompassPermission()"
+            style="display:none;margin-top:10px;padding:10px 24px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
+            🔓 Compass Permission دیں (iPhone)
+          </button>
+          <!-- Calibration -->
+          <button onclick="calibrateCompass()"
+            style="margin-top:8px;padding:8px 16px;background:var(--gold-bg);border:1px solid rgba(180,130,0,.3);border-radius:8px;color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;width:100%;">
+            🔄 Calibrate Compass — موبائل کو ∞ شکل میں گھمائیں
+          </button>
+          <div style="margin-top:8px;font-size:10px;color:var(--text3);text-align:center;line-height:1.6;">
+            موبائل سیدھا پکڑیں • آہستہ گھمائیں • سوئی قبلہ دکھائے گی
+          </div>
         </div>
       </div>
     </div>
@@ -600,7 +626,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             <div id="featGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             <!-- Timing note -->
             <div id="timingNote" style="margin-top:12px;background:var(--gold-bg);border:1px solid rgba(180,130,0,.2);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--gold);line-height:1.7;text-align:right;font-family:var(--ur-font);direction:rtl;">
-              ⚠️ نوٹ: اوقات میں 2-3 منٹ کا فرق ممکن ہے — یہ تمام prayer time apps میں معمول کی بات ہے۔
+              ⚠️ نوٹ: اوقات کا حساب مستند فلکیاتی اصولوں (18° Hanafi) پر ہے۔ مختلف ذرائع میں 2-5 منٹ کا فرق معمول ہے۔
             </div>
           </div>
         </div>
@@ -616,41 +642,41 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 // ══════════════════════════════════════════════════
 const C={
 "Karachi":[24.8607,67.0011,0,0,"کراچی"],
-"Hyderabad":[25.3960,68.3578,-1,0,"حیدرآباد"],
+"Hyderabad":[25.396,68.3578,0,0,"حیدرآباد"],
 "Sukkur":[27.7052,68.8574,0,0,"سکھر"],
 "Larkana":[27.5570,68.2100,0,0,"لاڑکانہ"],
-"Nawabshah":[26.2442,68.4100,-1,0,"نواب شاہ"],
-"Mirpur Khas":[25.5200,69.0100,-1,0,"میرپور خاص"],
+"Nawabshah":[26.2442,68.4100,0,0,"نواب شاہ"],
+"Mirpur Khas":[25.5200,69.0100,0,0,"میرپور خاص"],
 "Jacobabad":[28.2769,68.4514,0,0,"جیکب آباد"],
 "Shikarpur":[27.9554,68.6375,0,0,"شکارپور"],
 "Khairpur":[27.5295,69.0155,0,0,"خیرپور"],
-"Dadu":[26.7319,67.7750,-1,0,"دادو"],
-"Badin":[24.6559,68.8392,-1,0,"بدین"],
+"Dadu":[26.7319,67.7750,0,0,"دادو"],
+"Badin":[24.6559,68.8392,0,0,"بدین"],
 "Thatta":[24.7461,67.9231,0,0,"ٹھٹہ"],
-"Kotri":[25.3667,68.3000,-1,0,"کوٹری"],
+"Kotri":[25.3667,68.3000,0,0,"کوٹری"],
 "Ghotki":[28.0052,69.3152,0,0,"گھوٹکی"],
-"Sanghar":[26.0440,68.9480,-1,0,"سانگھڑ"],
-"Umerkot":[25.3618,69.7367,-1,0,"عمرکوٹ"],
-"Tando Adam":[25.7656,68.6594,-1,0,"ٹنڈو آدم"],
-"Tando Allahyar":[25.4618,68.7194,-1,0,"ٹنڈو الٰہیار"],
-"Jamshoro":[25.4300,68.2800,-1,0,"جامشورو"],
+"Sanghar":[26.0440,68.9480,0,0,"سانگھڑ"],
+"Umerkot":[25.3618,69.7367,0,0,"عمرکوٹ"],
+"Tando Adam":[25.7656,68.6594,0,0,"ٹنڈو آدم"],
+"Tando Allahyar":[25.4618,68.7194,0,0,"ٹنڈو الٰہیار"],
+"Jamshoro":[25.4300,68.2800,0,0,"جامشورو"],
 "Naushahro Feroze":[26.8430,68.1220,0,0,"نوشہرہ فیروز"],
 "Kandhkot":[28.2440,69.3110,0,0,"کندھ کوٹ"],
-"Mithi":[24.7300,69.7980,-1,0,"مٹھی"],
-"Digri":[25.1574,69.1091,-1,0,"ڈگری"],
-"Matiari":[25.5921,68.4589,-1,0,"ماتیاری"],
+"Mithi":[24.7300,69.7980,0,0,"مٹھی"],
+"Digri":[25.1574,69.1091,0,0,"ڈگری"],
+"Matiari":[25.5921,68.4589,0,0,"ماتیاری"],
 "Kashmor":[28.4538,69.5838,0,0,"کشمور"],
 "Shahdadkot":[27.8452,67.9071,0,0,"شہداد کوٹ"],
 "Qambar":[27.5552,68.0300,0,0,"قمبر"],
 "Kambar":[27.5870,68.0000,0,0,"کامبر"],
 "Mehar":[27.1700,67.8100,0,0,"مہار"],
-"Sehwan":[26.4257,67.8622,-1,0,"سہون"],
-"Johi":[26.6900,67.6100,-1,0,"جوہی"],
+"Sehwan":[26.4257,67.8622,0,0,"سہون"],
+"Johi":[26.6900,67.6100,0,0,"جوہی"],
 "Khairpur Nathan Shah":[26.9700,67.7300,0,0,"خیرپور ناتھن شاہ"],
-"Daur":[26.4600,68.4700,-1,0,"دور"],
-"Tando Muhammad Khan":[25.1200,68.5400,-1,0,"ٹنڈو محمد خان"],
-"Bulri Shah Karim":[25.6200,68.4400,-1,0,"بلڑی شاہ کریم"],
-"Hala":[25.8200,68.4300,-1,0,"ہالہ"],
+"Daur":[26.4600,68.4700,0,0,"دور"],
+"Tando Muhammad Khan":[25.1200,68.5400,0,0,"ٹنڈو محمد خان"],
+"Bulri Shah Karim":[25.6200,68.4400,0,0,"بلڑی شاہ کریم"],
+"Hala":[25.8200,68.4300,0,0,"ہالہ"],
 "Gambat":[27.3500,68.5200,0,0,"گمبٹ"],
 "Kingri":[27.2700,68.9700,0,0,"کنگری"],
 "Kotdiji":[27.3400,68.7100,0,0,"کوٹ ڈیجی"],
@@ -660,296 +686,296 @@ const C={
 "Ubauro":[28.1900,69.7200,0,0,"عبوڑو"],
 "Mirpur Mathelo":[27.9600,69.5600,0,0,"میرپور ماتھیلو"],
 "Obaro":[28.3800,69.8400,0,0,"اوبارو"],
-"Islamkot":[24.7000,70.1800,-1,0,"اسلام کوٹ"],
-"Chhor":[25.5100,69.7900,-1,0,"چھور"],
-"Kunri":[25.4700,69.5800,-1,0,"کنری"],
+"Islamkot":[24.7000,70.1800,0,0,"اسلام کوٹ"],
+"Chhor":[25.5100,69.7900,0,0,"چھور"],
+"Kunri":[25.4700,69.5800,0,0,"کنری"],
 "Mirpur Sakro":[24.5500,67.6200,0,0,"میرپور ساکرو"],
 "Sujawal":[24.5908,68.0700,0,0,"سجاول"],
 "Jhimpir":[25.0300,67.9500,0,0,"جھمپیر"],
 "Gharo":[24.7400,67.5800,0,0,"گھارو"],
-"Chotiari":[26.3900,68.7300,-1,0,"چوٹیاری"],
-"Shahdadpur":[25.9200,68.6200,-1,0,"شہداد پور"],
-"Sinjhoro":[25.7100,68.7600,-1,0,"سنجھورو"],
-"Khipro":[25.8200,69.3700,-1,0,"کھپرو"],
-"Tharparkar":[24.7100,69.7900,-1,0,"تھرپارکر"],
-"Lahore":[31.5204,74.3587,2,2,"لاہور"],
-"Faisalabad":[31.4504,73.1350,2,2,"فیصل آباد"],
-"Rawalpindi":[33.5651,73.0169,4,3,"راولپنڈی"],
-"Multan":[30.1575,71.5249,1,1,"ملتان"],
-"Gujranwala":[32.1877,74.1945,3,2,"گوجرانوالہ"],
-"Sialkot":[32.4945,74.5229,3,2,"سیالکوٹ"],
-"Bahawalpur":[29.3956,71.6722,1,0,"بہاولپور"],
-"Sargodha":[32.0836,72.6711,2,2,"سرگودھا"],
-"Sheikhupura":[31.7167,73.9850,2,2,"شیخوپورہ"],
-"Jhang":[31.2681,72.3181,2,1,"جھنگ"],
-"Rahim Yar Khan":[28.4202,70.2952,1,0,"رحیم یار خان"],
-"Gujrat":[32.5731,74.0794,3,2,"گجرات"],
-"Kasur":[31.1167,74.4500,2,2,"قصور"],
-"Okara":[30.8100,73.4500,2,1,"اوکاڑہ"],
-"Chiniot":[31.7194,72.9783,2,2,"چنیوٹ"],
-"Sahiwal":[30.6706,73.1064,2,1,"ساہیوال"],
-"Khanewal":[30.3005,71.9323,1,1,"خانیوال"],
-"Vehari":[30.0450,72.3500,1,1,"وہاری"],
-"Lodhran":[29.5350,71.6300,1,0,"لودھراں"],
-"Pakpattan":[30.3433,73.3875,2,1,"پاکپتن"],
-"Toba Tek Singh":[30.9720,72.4826,2,1,"ٹوبہ ٹیک سنگھ"],
-"Hafizabad":[32.0720,73.6880,2,2,"حافظ آباد"],
-"Mandi Bahauddin":[32.5860,73.4940,3,2,"منڈی بہاؤالدین"],
-"Narowal":[32.1000,74.8700,3,2,"نارووال"],
-"Khushab":[32.2986,72.3535,3,2,"خوشاب"],
-"Bhakkar":[31.6300,71.0700,1,1,"بھکر"],
-"Layyah":[30.9600,70.9400,1,1,"لیہ"],
-"Muzaffargarh":[30.0700,71.1900,1,1,"مظفرگڑھ"],
-"Dera Ghazi Khan":[30.0574,70.6349,1,1,"ڈیرہ غازی خان"],
-"Attock":[33.7600,72.3600,4,3,"اٹک"],
-"Chakwal":[32.9300,72.8500,3,2,"چکوال"],
-"Jhelum":[32.9350,73.7260,3,2,"جہلم"],
-"Wah Cantt":[33.7757,72.7000,4,3,"واہ کینٹ"],
-"Taxila":[33.7457,72.8414,4,3,"ٹیکسلا"],
-"Murree":[33.9071,73.3943,4,3,"مری"],
-"Bahawalnagar":[29.9953,73.2534,1,1,"بہاولنگر"],
-"Mianwali":[32.5838,71.5436,2,1,"میانوالی"],
-"Nankana Sahib":[31.4500,73.7100,2,2,"ننکانہ صاحب"],
-"Wazirabad":[32.4439,74.1200,3,2,"وزیرآباد"],
-"Daska":[32.3239,74.3494,3,2,"ڈسکہ"],
-"Kamalia":[30.7249,72.6473,2,1,"کمالیہ"],
-"Kot Addu":[30.4700,70.9600,1,1,"کوٹ ادو"],
-"Liaquatpur":[28.9146,70.9558,1,0,"لیاقت پور"],
-"Haroonabad":[29.6147,73.1394,1,1,"ہارون آباد"],
-"Chishtian":[29.7964,72.8581,1,1,"چشتیاں"],
-"Mailsi":[29.8062,72.1737,1,1,"میلسی"],
-"Burewala":[30.1667,72.6833,1,1,"بورے والا"],
-"Chichawatni":[30.5338,72.6934,2,1,"چیچہ وطنی"],
-"Muridke":[31.8020,74.2557,2,2,"مریدکے"],
-"Chunian":[30.9659,73.9790,2,2,"چونیاں"],
-"Jaranwala":[31.3333,73.4167,2,2,"جڑانوالہ"],
-"Phalia":[32.4302,73.5905,3,2,"پھالیہ"],
-"Yazman":[29.1228,71.7442,1,0,"یزمان"],
-"Sambrial":[32.4755,74.3528,3,2,"سمبڑیال"],
-"Pattoki":[31.0200,73.8500,2,2,"پتوکی"],
-"Kundian":[32.4569,71.4758,2,1,"کنڈیاں"],
-"Kabirwala":[30.4000,71.8700,1,1,"کبیروالہ"],
-"Hasilpur":[29.6960,72.5560,1,1,"حاصل پور"],
-"Ahmadpur East":[29.1430,71.2610,1,0,"احمد پور شرقیہ"],
-"Uch Sharif":[29.2334,71.0802,1,0,"اوچ شریف"],
-"Dipalpur":[30.6700,73.6500,2,1,"دیپالپور"],
-"Renala Khurd":[30.8793,73.5994,2,1,"رینالہ خورد"],
-"Fort Abbas":[29.1933,72.8534,1,1,"فورٹ عباس"],
-"Kahror Pakka":[29.6200,71.9200,1,1,"کہرور پکا"],
-"Dunyapur":[29.8000,71.7400,1,1,"دنیاپور"],
-"Jalalpur Pirwala":[29.5100,71.2300,1,1,"جلال پور پیروالہ"],
-"Shujabad":[29.8800,71.3000,1,1,"شجاع آباد"],
-"Mian Channu":[30.4400,72.3500,1,1,"میاں چنوں"],
-"Khairpur Tamewali":[29.5700,72.2300,1,1,"خیرپور تامیوالی"],
-"Sadiqabad":[28.3100,70.1300,1,0,"صادق آباد"],
-"Khanpur":[28.6467,70.6556,1,0,"خان پور"],
-"Jampur":[29.6400,70.5900,1,0,"جام پور"],
-"Rajanpur":[29.1000,70.3300,1,0,"راجن پور"],
-"Taunsa":[30.7000,70.6500,1,1,"تونسہ"],
-"Kot Chutta":[29.8000,70.5600,1,0,"کوٹ چھٹہ"],
-"Shor Kot":[31.5600,72.3700,2,1,"شور کوٹ"],
-"Bhawana":[31.5700,72.6500,2,1,"بھوانہ"],
-"Pir Mahal":[30.7700,72.4300,2,1,"پیر محل"],
-"Gojra":[31.1500,72.6800,2,1,"گوجرہ"],
-"Samundri":[31.0600,72.9600,2,2,"سمندری"],
-"Tandlianwala":[31.0300,73.1300,2,2,"تاندلیانوالہ"],
-"Chak Jhumra":[31.5600,73.1800,2,2,"چک جھمرا"],
-"Dijkot":[31.2100,72.9900,2,2,"دیجکوٹ"],
-"Pasrur":[32.2600,74.6600,3,2,"پسرور"],
-"Zafarwal":[32.3500,74.9000,3,2,"ظفروال"],
-"Shakargarh":[32.2600,75.1600,3,2,"شکرگڑھ"],
-"Kamoke":[31.9800,74.2200,2,2,"کموکے"],
-"Kot Radha Kishan":[31.1600,74.0700,2,2,"کوٹ رادھا کشن"],
-"Depalpur":[30.6700,73.6500,2,1,"ڈیپالپور"],
-"Ferozewala":[31.5690,74.0384,2,2,"فیروزوالہ"],
-"Manga Mandi":[31.3800,74.2800,2,2,"منگا منڈی"],
-"Kahna":[31.4200,74.2500,2,2,"کاہنہ"],
-"Raiwind":[31.2500,74.2300,2,2,"رائیونڈ"],
-"Jia Bagga":[31.3000,74.1500,2,2,"جیا بگا"],
-"Changa Manga":[31.0200,73.9100,2,2,"چانگا مانگا"],
-"Sangla Hill":[31.7167,73.3833,2,2,"سنگلہ ہل"],
-"Pindi Bhattian":[31.9000,73.2700,2,2,"پنڈی بھٹیاں"],
-"Lala Musa":[32.7000,73.9500,3,2,"لالہ موسیٰ"],
-"Kharian":[32.8100,73.8800,3,2,"کھاریاں"],
-"Sarai Alamgir":[32.9000,73.7500,3,2,"سرائے عالمگیر"],
-"Kunjah":[32.5300,74.0500,3,2,"کنجاہ"],
-"Sohawa":[33.0500,73.2000,4,3,"سوہاوہ"],
-"Gujar Khan":[33.2556,73.3000,4,3,"گوجر خان"],
-"Kahuta":[33.5900,73.3900,4,3,"کہوٹہ"],
-"Fateh Jang":[33.5600,72.6400,4,3,"فتح جنگ"],
-"Hazro":[33.9000,72.4900,4,3,"حضرو"],
-"Pindi Gheb":[33.2400,72.2700,4,3,"پنڈی گھیب"],
-"Talagang":[32.9200,72.4200,3,2,"تلہ گنگ"],
-"Kallar Kahar":[32.7800,72.7000,3,2,"کلر کہار"],
-"Tamman":[32.8500,72.1500,3,2,"ٹامن"],
-"Piplan":[32.3500,71.3600,2,1,"پیپلاں"],
-"Mankera":[31.3900,71.4400,1,1,"منکیرہ"],
-"Darya Khan":[31.7900,71.1000,1,1,"دریا خان"],
-"Kalabagh":[32.9600,71.5500,3,2,"کالاباغ"],
-"Isa Khel":[32.6800,71.4300,2,1,"عیسیٰ خیل"],
-"Wan Bachran":[31.5400,71.1600,1,1,"ون بچراں"],
-"Ali Pur":[29.3800,70.9100,1,0,"علی پور"],
-"Kot Sultan":[30.7400,70.9300,1,1,"کوٹ سلطان"],
-"Leiah":[30.9600,70.9400,1,1,"لیہ"],
-"Chaubara":[30.7200,71.1900,1,1,"چوبارہ"],
-"Karor Lal Esan":[31.2200,70.9500,1,1,"کروڑ لعل عیسن"],
-"Peshawar":[34.0151,71.5249,6,4,"پشاور"],
-"Abbottabad":[34.1463,73.2117,6,4,"ایبٹ آباد"],
-"Mardan":[34.2019,72.0446,6,4,"مردان"],
-"Mingora":[34.7718,72.3601,7,5,"منگورہ"],
-"Kohat":[33.5869,71.4414,5,4,"کوہاٹ"],
-"Bannu":[32.9853,70.6060,4,3,"بنوں"],
-"Dera Ismail Khan":[31.8314,70.9019,3,2,"ڈیرہ اسماعیل خان"],
-"Swabi":[34.0053,72.4700,6,4,"صوابی"],
-"Nowshera":[34.0153,71.9747,6,4,"نوشہرہ"],
-"Charsadda":[34.1487,71.7308,6,4,"چارسدہ"],
-"Haripur":[33.9940,72.9340,5,4,"ہری پور"],
-"Mansehra":[34.3302,73.1968,7,5,"مانسہرہ"],
-"Hangu":[33.5286,71.0583,5,4,"ہنگو"],
-"Karak":[33.1169,71.0933,5,4,"کرک"],
-"Lakki Marwat":[32.6073,70.9117,4,3,"لکی مروت"],
-"Tank":[32.2190,70.3774,4,3,"ٹانک"],
-"Chitral":[35.8511,71.7889,8,6,"چترال"],
-"Dir Upper":[35.2060,71.8734,8,6,"دیر بالا"],
-"Dir Lower":[34.8700,71.9900,7,5,"دیر پائین"],
-"Topi":[34.0800,72.6200,6,4,"ٹوپی"],
-"Razar":[34.1500,72.3800,6,4,"رزار"],
-"Lahor Swabi":[34.0700,72.4200,6,4,"لہور صوابی"],
-"Ghazi":[33.9500,72.5200,5,4,"غازی"],
-"Zarobi":[34.0333,72.5667,6,4,"زروبی"],
-"Hazara University":[34.4214,73.2485,7,5,"ہزارہ یونیورسٹی"],
-"Dhodial":[34.4100,73.2300,7,5,"ڈھوڈیال"],
-"Batagram":[34.6811,73.0239,7,5,"بٹگرام"],
-"Shangla":[34.9000,72.8500,7,5,"شانگلہ"],
-"Buner":[34.5000,72.5000,7,5,"بونیر"],
-"Malakand":[34.5639,71.9311,7,5,"مالاکنڈ"],
-"Timergara":[35.0700,71.8400,8,6,"تیمرگرہ"],
-"Havelian":[34.0500,73.1600,6,4,"ہویلیاں"],
-"Takht Bhai":[34.2500,72.0200,6,4,"تخت بھائی"],
-"Pabbi":[33.9900,71.7200,6,4,"پابی"],
-"Daggar":[34.5100,72.4700,7,5,"ڈگر"],
-"Matta":[35.0500,72.5500,8,6,"مٹہ"],
-"Alpuri":[35.0000,72.6400,8,6,"الپوری"],
-"Besham":[34.9000,72.8700,7,5,"بیشام"],
-"Pattan":[35.1200,73.0100,8,6,"پٹن"],
-"Darband":[34.1300,72.8900,6,4,"درنڈ"],
-"Oghi":[34.5300,72.9200,7,5,"اوگی"],
-"Balakot":[34.5500,73.3500,7,5,"بالاکوٹ"],
-"Shinkiari":[34.4700,73.2000,7,5,"شنکیاری"],
-"Torghar":[34.9800,72.6200,8,6,"تورغر"],
-"Shangla Par":[34.8600,72.8200,7,5,"شانگلہ پار"],
-"Lund Khawar":[33.8500,71.5500,6,4,"لنڈ خوڑ"],
-"Tal":[33.9800,70.8200,6,4,"تل"],
-"Domel":[34.0200,73.4700,6,4,"دومیل"],
-"Qalandarabad":[34.2200,73.3000,7,5,"قلندرآباد"],
-"Ghallantai":[30.9400,69.4300,3,2,"غلنطائی"],
-"Kulachi":[31.9300,70.4600,3,2,"کلاچی"],
-"Daraban":[31.7100,70.0700,3,2,"درابن"],
-"Paharpur":[32.0600,70.9900,3,2,"پہاڑ پور"],
-"Serai Naurang":[32.5900,70.7500,4,3,"سرائے نورنگ"],
-"Doaba":[33.5100,71.3900,5,4,"ڈوابہ"],
-"Gumbat":[34.1300,72.2100,6,4,"گمبٹ"],
-"Zaida":[34.2700,72.3500,6,4,"زیدہ"],
-"Lundkhwar":[34.3400,71.8600,6,4,"لنڈخور"],
-"Palai":[34.5200,71.6800,7,5,"پالائی"],
-"Mian Gujjar":[34.7200,72.0300,7,5,"میاں گجر"],
-"Barawal":[35.4000,72.0000,8,6,"براول"],
-"Kalam":[35.4900,72.5800,8,6,"کالام"],
-"Bahrain":[35.2000,72.5200,8,6,"بحرین"],
-"Madyan":[35.1300,72.5400,8,6,"مدین"],
-"Khwazakhela":[35.0500,72.3900,8,6,"خوازہ خیلہ"],
-"Charbagh":[34.9800,72.3500,8,6,"چارباغ"],
-"Kabal":[34.8500,72.3700,7,5,"کبل"],
-"Barikot":[34.6700,72.3500,7,5,"بریکوٹ"],
-"Khweshki":[34.0800,71.6500,6,4,"خویشکی"],
-"Shabqadar":[34.2200,71.5500,6,4,"شبقدر"],
-"Tangi":[34.3300,71.7000,6,4,"تنگی"],
-"Utmanzai":[34.1700,71.7500,6,4,"عثمانزئی"],
-"Prang":[33.9800,71.6800,6,4,"پرنگ"],
-"Mattni":[33.9200,71.5800,6,4,"متنی"],
-"Chamkani":[33.9400,71.7500,6,4,"چمکنی"],
-"Bara":[33.9700,71.3000,6,4,"باڑہ"],
-"Jamrud":[33.9900,71.3800,6,4,"جمرود"],
-"Landi Kotal":[34.1000,71.1000,6,4,"لنڈی کوتل"],
-"Darra Adam Khel":[33.7500,71.5400,5,4,"درہ آدم خیل"],
-"Quetta":[30.1798,66.9750,-2,-1,"کوئٹہ"],
-"Gwadar":[25.1216,62.3254,-7,-5,"گوادر"],
-"Turbat":[26.0050,63.0440,-6,-4,"تُربت"],
-"Khuzdar":[27.8100,66.6200,-2,-1,"خضدار"],
-"Hub":[25.0500,66.9500,-1,0,"حب"],
-"Chaman":[30.9200,66.4500,-2,-1,"چمان"],
-"Zhob":[31.3416,69.4486,3,2,"ژوب"],
-"Loralai":[30.3718,68.5933,2,1,"لورالائی"],
-"Dera Bugti":[29.0360,69.1590,2,1,"ڈیرہ بگٹی"],
-"Nushki":[29.5523,66.0232,-3,-2,"نوشکی"],
-"Dalbandin":[28.8929,64.4049,-5,-4,"دالبندین"],
-"Panjgur":[26.9696,64.0905,-5,-4,"پنجگور"],
-"Kharan":[28.5864,65.4152,-4,-3,"خاران"],
-"Mastung":[29.7990,66.8446,-2,-1,"مستونگ"],
-"Kalat":[29.0231,66.5920,-2,-1,"کلات"],
-"Sibi":[29.5432,67.8770,-1,0,"سبی"],
-"Sui":[28.6472,69.1760,2,1,"سوئی"],
+"Chotiari":[26.3900,68.7300,0,0,"چوٹیاری"],
+"Shahdadpur":[25.9200,68.6200,0,0,"شہداد پور"],
+"Sinjhoro":[25.7100,68.7600,0,0,"سنجھورو"],
+"Khipro":[25.8200,69.3700,0,0,"کھپرو"],
+"Tharparkar":[24.7100,69.7900,0,0,"تھرپارکر"],
+"Lahore":[31.5204,74.3587,0,0,"لاہور"],
+"Faisalabad":[31.4504,73.135,0,0,"فیصل آباد"],
+"Rawalpindi":[33.5651,73.0169,0,0,"راولپنڈی"],
+"Multan":[30.1575,71.5249,0,0,"ملتان"],
+"Gujranwala":[32.1877,74.1945,0,0,"گوجرانوالہ"],
+"Sialkot":[32.4945,74.5229,0,0,"سیالکوٹ"],
+"Bahawalpur":[29.3956,71.6722,0,0,"بہاولپور"],
+"Sargodha":[32.0836,72.6711,0,0,"سرگودھا"],
+"Sheikhupura":[31.7167,73.9850,0,0,"شیخوپورہ"],
+"Jhang":[31.2681,72.3181,0,0,"جھنگ"],
+"Rahim Yar Khan":[28.4202,70.2952,0,0,"رحیم یار خان"],
+"Gujrat":[32.5731,74.0794,0,0,"گجرات"],
+"Kasur":[31.1167,74.4500,0,0,"قصور"],
+"Okara":[30.8100,73.4500,0,0,"اوکاڑہ"],
+"Chiniot":[31.7194,72.9783,0,0,"چنیوٹ"],
+"Sahiwal":[30.6706,73.1064,0,0,"ساہیوال"],
+"Khanewal":[30.3005,71.9323,0,0,"خانیوال"],
+"Vehari":[30.0450,72.3500,0,0,"وہاری"],
+"Lodhran":[29.5350,71.6300,0,0,"لودھراں"],
+"Pakpattan":[30.3433,73.3875,0,0,"پاکپتن"],
+"Toba Tek Singh":[30.9720,72.4826,0,0,"ٹوبہ ٹیک سنگھ"],
+"Hafizabad":[32.0720,73.6880,0,0,"حافظ آباد"],
+"Mandi Bahauddin":[32.5860,73.4940,0,0,"منڈی بہاؤالدین"],
+"Narowal":[32.1000,74.8700,0,0,"نارووال"],
+"Khushab":[32.2986,72.3535,0,0,"خوشاب"],
+"Bhakkar":[31.6300,71.0700,0,0,"بھکر"],
+"Layyah":[30.9600,70.9400,0,0,"لیہ"],
+"Muzaffargarh":[30.0700,71.1900,0,0,"مظفرگڑھ"],
+"Dera Ghazi Khan":[30.0574,70.6349,0,0,"ڈیرہ غازی خان"],
+"Attock":[33.7600,72.3600,0,0,"اٹک"],
+"Chakwal":[32.9300,72.8500,0,0,"چکوال"],
+"Jhelum":[32.9350,73.7260,0,0,"جہلم"],
+"Wah Cantt":[33.7757,72.7000,0,0,"واہ کینٹ"],
+"Taxila":[33.7457,72.8414,0,0,"ٹیکسلا"],
+"Murree":[33.9071,73.3943,0,0,"مری"],
+"Bahawalnagar":[29.9953,73.2534,0,0,"بہاولنگر"],
+"Mianwali":[32.5838,71.5436,0,0,"میانوالی"],
+"Nankana Sahib":[31.4500,73.7100,0,0,"ننکانہ صاحب"],
+"Wazirabad":[32.4439,74.1200,0,0,"وزیرآباد"],
+"Daska":[32.3239,74.3494,0,0,"ڈسکہ"],
+"Kamalia":[30.7249,72.6473,0,0,"کمالیہ"],
+"Kot Addu":[30.4700,70.9600,0,0,"کوٹ ادو"],
+"Liaquatpur":[28.9146,70.9558,0,0,"لیاقت پور"],
+"Haroonabad":[29.6147,73.1394,0,0,"ہارون آباد"],
+"Chishtian":[29.7964,72.8581,0,0,"چشتیاں"],
+"Mailsi":[29.8062,72.1737,0,0,"میلسی"],
+"Burewala":[30.1667,72.6833,0,0,"بورے والا"],
+"Chichawatni":[30.5338,72.6934,0,0,"چیچہ وطنی"],
+"Muridke":[31.8020,74.2557,0,0,"مریدکے"],
+"Chunian":[30.9659,73.9790,0,0,"چونیاں"],
+"Jaranwala":[31.3333,73.4167,0,0,"جڑانوالہ"],
+"Phalia":[32.4302,73.5905,0,0,"پھالیہ"],
+"Yazman":[29.1228,71.7442,0,0,"یزمان"],
+"Sambrial":[32.4755,74.3528,0,0,"سمبڑیال"],
+"Pattoki":[31.0200,73.8500,0,0,"پتوکی"],
+"Kundian":[32.4569,71.4758,0,0,"کنڈیاں"],
+"Kabirwala":[30.4000,71.8700,0,0,"کبیروالہ"],
+"Hasilpur":[29.6960,72.5560,0,0,"حاصل پور"],
+"Ahmadpur East":[29.1430,71.2610,0,0,"احمد پور شرقیہ"],
+"Uch Sharif":[29.2334,71.0802,0,0,"اوچ شریف"],
+"Dipalpur":[30.6700,73.6500,0,0,"دیپالپور"],
+"Renala Khurd":[30.8793,73.5994,0,0,"رینالہ خورد"],
+"Fort Abbas":[29.1933,72.8534,0,0,"فورٹ عباس"],
+"Kahror Pakka":[29.6200,71.9200,0,0,"کہرور پکا"],
+"Dunyapur":[29.8000,71.7400,0,0,"دنیاپور"],
+"Jalalpur Pirwala":[29.5100,71.2300,0,0,"جلال پور پیروالہ"],
+"Shujabad":[29.8800,71.3000,0,0,"شجاع آباد"],
+"Mian Channu":[30.4400,72.3500,0,0,"میاں چنوں"],
+"Khairpur Tamewali":[29.5700,72.2300,0,0,"خیرپور تامیوالی"],
+"Sadiqabad":[28.3100,70.1300,0,0,"صادق آباد"],
+"Khanpur":[28.6467,70.6556,0,0,"خان پور"],
+"Jampur":[29.6400,70.5900,0,0,"جام پور"],
+"Rajanpur":[29.1000,70.3300,0,0,"راجن پور"],
+"Taunsa":[30.7000,70.6500,0,0,"تونسہ"],
+"Kot Chutta":[29.8000,70.5600,0,0,"کوٹ چھٹہ"],
+"Shor Kot":[31.5600,72.3700,0,0,"شور کوٹ"],
+"Bhawana":[31.5700,72.6500,0,0,"بھوانہ"],
+"Pir Mahal":[30.7700,72.4300,0,0,"پیر محل"],
+"Gojra":[31.1500,72.6800,0,0,"گوجرہ"],
+"Samundri":[31.0600,72.9600,0,0,"سمندری"],
+"Tandlianwala":[31.0300,73.1300,0,0,"تاندلیانوالہ"],
+"Chak Jhumra":[31.5600,73.1800,0,0,"چک جھمرا"],
+"Dijkot":[31.2100,72.9900,0,0,"دیجکوٹ"],
+"Pasrur":[32.2600,74.6600,0,0,"پسرور"],
+"Zafarwal":[32.3500,74.9000,0,0,"ظفروال"],
+"Shakargarh":[32.2600,75.1600,0,0,"شکرگڑھ"],
+"Kamoke":[31.9800,74.2200,0,0,"کموکے"],
+"Kot Radha Kishan":[31.1600,74.0700,0,0,"کوٹ رادھا کشن"],
+"Depalpur":[30.6700,73.6500,0,0,"ڈیپالپور"],
+"Ferozewala":[31.5690,74.0384,0,0,"فیروزوالہ"],
+"Manga Mandi":[31.3800,74.2800,0,0,"منگا منڈی"],
+"Kahna":[31.4200,74.2500,0,0,"کاہنہ"],
+"Raiwind":[31.2500,74.2300,0,0,"رائیونڈ"],
+"Jia Bagga":[31.3000,74.1500,0,0,"جیا بگا"],
+"Changa Manga":[31.0200,73.9100,0,0,"چانگا مانگا"],
+"Sangla Hill":[31.7167,73.3833,0,0,"سنگلہ ہل"],
+"Pindi Bhattian":[31.9000,73.2700,0,0,"پنڈی بھٹیاں"],
+"Lala Musa":[32.7000,73.9500,0,0,"لالہ موسیٰ"],
+"Kharian":[32.8100,73.8800,0,0,"کھاریاں"],
+"Sarai Alamgir":[32.9000,73.7500,0,0,"سرائے عالمگیر"],
+"Kunjah":[32.5300,74.0500,0,0,"کنجاہ"],
+"Sohawa":[33.0500,73.2000,0,0,"سوہاوہ"],
+"Gujar Khan":[33.2556,73.3000,0,0,"گوجر خان"],
+"Kahuta":[33.5900,73.3900,0,0,"کہوٹہ"],
+"Fateh Jang":[33.5600,72.6400,0,0,"فتح جنگ"],
+"Hazro":[33.9000,72.4900,0,0,"حضرو"],
+"Pindi Gheb":[33.2400,72.2700,0,0,"پنڈی گھیب"],
+"Talagang":[32.9200,72.4200,0,0,"تلہ گنگ"],
+"Kallar Kahar":[32.7800,72.7000,0,0,"کلر کہار"],
+"Tamman":[32.8500,72.1500,0,0,"ٹامن"],
+"Piplan":[32.3500,71.3600,0,0,"پیپلاں"],
+"Mankera":[31.3900,71.4400,0,0,"منکیرہ"],
+"Darya Khan":[31.7900,71.1000,0,0,"دریا خان"],
+"Kalabagh":[32.9600,71.5500,0,0,"کالاباغ"],
+"Isa Khel":[32.6800,71.4300,0,0,"عیسیٰ خیل"],
+"Wan Bachran":[31.5400,71.1600,0,0,"ون بچراں"],
+"Ali Pur":[29.3800,70.9100,0,0,"علی پور"],
+"Kot Sultan":[30.7400,70.9300,0,0,"کوٹ سلطان"],
+"Leiah":[30.9600,70.9400,0,0,"لیہ"],
+"Chaubara":[30.7200,71.1900,0,0,"چوبارہ"],
+"Karor Lal Esan":[31.2200,70.9500,0,0,"کروڑ لعل عیسن"],
+"Peshawar":[34.0151,71.5249,0,0,"پشاور"],
+"Abbottabad":[34.1463,73.2117,0,0,"ایبٹ آباد"],
+"Mardan":[34.2019,72.0446,0,0,"مردان"],
+"Mingora":[34.7718,72.3601,0,0,"منگورہ"],
+"Kohat":[33.5869,71.4414,0,0,"کوہاٹ"],
+"Bannu":[32.9853,70.6060,0,0,"بنوں"],
+"Dera Ismail Khan":[31.8314,70.9019,0,0,"ڈیرہ اسماعیل خان"],
+"Swabi":[34.0053,72.4700,0,0,"صوابی"],
+"Nowshera":[34.0153,71.9747,0,0,"نوشہرہ"],
+"Charsadda":[34.1487,71.7308,0,0,"چارسدہ"],
+"Haripur":[33.9940,72.9340,0,0,"ہری پور"],
+"Mansehra":[34.3302,73.1968,0,0,"مانسہرہ"],
+"Hangu":[33.5286,71.0583,0,0,"ہنگو"],
+"Karak":[33.1169,71.0933,0,0,"کرک"],
+"Lakki Marwat":[32.6073,70.9117,0,0,"لکی مروت"],
+"Tank":[32.2190,70.3774,0,0,"ٹانک"],
+"Chitral":[35.8511,71.7889,0,0,"چترال"],
+"Dir Upper":[35.2060,71.8734,0,0,"دیر بالا"],
+"Dir Lower":[34.8700,71.9900,0,0,"دیر پائین"],
+"Topi":[34.0800,72.6200,0,0,"ٹوپی"],
+"Razar":[34.1500,72.3800,0,0,"رزار"],
+"Lahor Swabi":[34.0700,72.4200,0,0,"لہور صوابی"],
+"Ghazi":[33.9500,72.5200,0,0,"غازی"],
+"Zarobi":[34.0333,72.5667,0,0,"زروبی"],
+"Hazara University":[34.4214,73.2485,0,0,"ہزارہ یونیورسٹی"],
+"Dhodial":[34.4100,73.2300,0,0,"ڈھوڈیال"],
+"Batagram":[34.6811,73.0239,0,0,"بٹگرام"],
+"Shangla":[34.9000,72.8500,0,0,"شانگلہ"],
+"Buner":[34.5000,72.5000,0,0,"بونیر"],
+"Malakand":[34.5639,71.9311,0,0,"مالاکنڈ"],
+"Timergara":[35.0700,71.8400,0,0,"تیمرگرہ"],
+"Havelian":[34.0500,73.1600,0,0,"ہویلیاں"],
+"Takht Bhai":[34.2500,72.0200,0,0,"تخت بھائی"],
+"Pabbi":[33.9900,71.7200,0,0,"پابی"],
+"Daggar":[34.5100,72.4700,0,0,"ڈگر"],
+"Matta":[35.0500,72.5500,0,0,"مٹہ"],
+"Alpuri":[35.0000,72.6400,0,0,"الپوری"],
+"Besham":[34.9000,72.8700,0,0,"بیشام"],
+"Pattan":[35.1200,73.0100,0,0,"پٹن"],
+"Darband":[34.1300,72.8900,0,0,"درنڈ"],
+"Oghi":[34.5300,72.9200,0,0,"اوگی"],
+"Balakot":[34.5500,73.3500,0,0,"بالاکوٹ"],
+"Shinkiari":[34.4700,73.2000,0,0,"شنکیاری"],
+"Torghar":[34.9800,72.6200,0,0,"تورغر"],
+"Shangla Par":[34.8600,72.8200,0,0,"شانگلہ پار"],
+"Lund Khawar":[33.8500,71.5500,0,0,"لنڈ خوڑ"],
+"Tal":[33.9800,70.8200,0,0,"تل"],
+"Domel":[34.0200,73.4700,0,0,"دومیل"],
+"Qalandarabad":[34.2200,73.3000,0,0,"قلندرآباد"],
+"Ghallantai":[30.9400,69.4300,0,0,"غلنطائی"],
+"Kulachi":[31.9300,70.4600,0,0,"کلاچی"],
+"Daraban":[31.7100,70.0700,0,0,"درابن"],
+"Paharpur":[32.0600,70.9900,0,0,"پہاڑ پور"],
+"Serai Naurang":[32.5900,70.7500,0,0,"سرائے نورنگ"],
+"Doaba":[33.5100,71.3900,0,0,"ڈوابہ"],
+"Gumbat":[34.1300,72.2100,0,0,"گمبٹ"],
+"Zaida":[34.2700,72.3500,0,0,"زیدہ"],
+"Lundkhwar":[34.3400,71.8600,0,0,"لنڈخور"],
+"Palai":[34.5200,71.6800,0,0,"پالائی"],
+"Mian Gujjar":[34.7200,72.0300,0,0,"میاں گجر"],
+"Barawal":[35.4000,72.0000,0,0,"براول"],
+"Kalam":[35.4900,72.5800,0,0,"کالام"],
+"Bahrain":[35.2000,72.5200,0,0,"بحرین"],
+"Madyan":[35.1300,72.5400,0,0,"مدین"],
+"Khwazakhela":[35.0500,72.3900,0,0,"خوازہ خیلہ"],
+"Charbagh":[34.9800,72.3500,0,0,"چارباغ"],
+"Kabal":[34.8500,72.3700,0,0,"کبل"],
+"Barikot":[34.6700,72.3500,0,0,"بریکوٹ"],
+"Khweshki":[34.0800,71.6500,0,0,"خویشکی"],
+"Shabqadar":[34.2200,71.5500,0,0,"شبقدر"],
+"Tangi":[34.3300,71.7000,0,0,"تنگی"],
+"Utmanzai":[34.1700,71.7500,0,0,"عثمانزئی"],
+"Prang":[33.9800,71.6800,0,0,"پرنگ"],
+"Mattni":[33.9200,71.5800,0,0,"متنی"],
+"Chamkani":[33.9400,71.7500,0,0,"چمکنی"],
+"Bara":[33.9700,71.3000,0,0,"باڑہ"],
+"Jamrud":[33.9900,71.3800,0,0,"جمرود"],
+"Landi Kotal":[34.1000,71.1000,0,0,"لنڈی کوتل"],
+"Darra Adam Khel":[33.7500,71.5400,0,0,"درہ آدم خیل"],
+"Quetta":[30.1798,66.975,0,0,"کوئٹہ"],
+"Gwadar":[25.1216,62.3254,0,0,"گوادر"],
+"Turbat":[26.0050,63.0440,0,0,"تُربت"],
+"Khuzdar":[27.8100,66.6200,0,0,"خضدار"],
+"Hub":[25.0500,66.9500,0,0,"حب"],
+"Chaman":[30.9200,66.4500,0,0,"چمان"],
+"Zhob":[31.3416,69.4486,0,0,"ژوب"],
+"Loralai":[30.3718,68.5933,0,0,"لورالائی"],
+"Dera Bugti":[29.0360,69.1590,0,0,"ڈیرہ بگٹی"],
+"Nushki":[29.5523,66.0232,0,0,"نوشکی"],
+"Dalbandin":[28.8929,64.4049,0,0,"دالبندین"],
+"Panjgur":[26.9696,64.0905,0,0,"پنجگور"],
+"Kharan":[28.5864,65.4152,0,0,"خاران"],
+"Mastung":[29.7990,66.8446,0,0,"مستونگ"],
+"Kalat":[29.0231,66.5920,0,0,"کلات"],
+"Sibi":[29.5432,67.8770,0,0,"سبی"],
+"Sui":[28.6472,69.1760,0,0,"سوئی"],
 "Naseerabad":[28.4200,68.3800,0,0,"نصیرآباد"],
 "Jaffarabad":[28.7700,68.0100,0,0,"جعفرآباد"],
-"Washuk":[27.2358,64.8808,-5,-4,"واشک"],
-"Pishin":[30.5800,66.9900,-2,-1,"پشین"],
-"Killa Saifullah":[30.7027,68.3445,2,1,"قلعہ سیف اللہ"],
-"Killa Abdullah":[30.6800,66.5800,-2,-1,"قلعہ عبداللہ"],
-"Awaran":[26.3500,64.7200,-5,-4,"آواران"],
-"Lasbela":[26.2000,66.1700,-2,-1,"لسبیلہ"],
-"Ziarat":[30.3800,67.7300,-1,0,"زیارت"],
-"Harnai":[30.1000,67.9300,-1,0,"حرنائی"],
-"Bolan":[29.6000,67.6000,-1,0,"بولان"],
+"Washuk":[27.2358,64.8808,0,0,"واشک"],
+"Pishin":[30.5800,66.9900,0,0,"پشین"],
+"Killa Saifullah":[30.7027,68.3445,0,0,"قلعہ سیف اللہ"],
+"Killa Abdullah":[30.6800,66.5800,0,0,"قلعہ عبداللہ"],
+"Awaran":[26.3500,64.7200,0,0,"آواران"],
+"Lasbela":[26.2000,66.1700,0,0,"لسبیلہ"],
+"Ziarat":[30.3800,67.7300,0,0,"زیارت"],
+"Harnai":[30.1000,67.9300,0,0,"حرنائی"],
+"Bolan":[29.6000,67.6000,0,0,"بولان"],
 "Usta Muhammad":[28.1620,68.0330,0,0,"استہ محمد"],
-"Mand":[25.9700,62.2200,-7,-5,"مند"],
-"Tump":[26.0000,62.8500,-6,-4,"تمپ"],
-"Buleda":[27.3200,63.4000,-5,-4,"بلیدہ"],
-"Dezghat":[27.4200,63.7000,-5,-4,"دیزگہاٹ"],
-"Gichk":[27.2000,63.0000,-6,-4,"گچک"],
-"Pasni":[25.2600,63.4700,-6,-4,"پسنی"],
-"Ormara":[25.2100,64.6300,-5,-4,"اورماڑہ"],
-"Jiwani":[25.0600,61.7400,-7,-5,"جیوانی"],
-"Kech":[26.0050,63.0440,-6,-4,"کیچ"],
-"Surab":[28.4900,66.2500,-2,-1,"سراب"],
-"Shahrag":[29.0200,67.3000,-1,0,"شہرگ"],
-"Duki":[30.1600,68.5900,2,1,"ڈکی"],
-"Musa Khel":[30.8900,69.8400,3,2,"موسیٰ خیل"],
-"Barkhan":[29.8900,69.5300,2,1,"بارکھان"],
-"Kohlu":[29.8900,69.2500,2,1,"کوہلو"],
-"Loti":[28.5700,68.8900,2,1,"لوٹی"],
-"Pir Koh":[28.8300,68.8200,2,1,"پیر کوہ"],
-"Muzaffarabad":[34.3700,73.4700,6,4,"مظفرآباد"],
-"Mirpur AJK":[33.1500,73.7500,4,3,"میرپور"],
-"Rawalakot":[33.8582,73.7617,4,3,"راولاکوٹ"],
-"Bagh AJK":[33.9833,73.7833,4,3,"باغ"],
-"Kotli":[33.5167,73.9000,4,3,"کوٹلی"],
-"Pallandri":[33.7100,73.9300,4,3,"پلندری"],
-"Hattian Bala":[34.3200,73.8200,6,4,"ہٹیاں بالا"],
-"Athmuqam":[34.5600,73.9000,7,5,"آٹھ مقام"],
-"Shardi":[34.6500,73.7500,7,5,"شاردی"],
-"Chakothi":[34.2500,73.6300,6,4,"چکوٹھی"],
-"Dudhnial":[34.5500,73.5700,7,5,"دودھنیال"],
-"Bhimber":[32.9700,74.0800,4,3,"بھمبر"],
-"Samahni":[32.8400,74.1200,4,3,"سماہنی"],
-"Barnala":[33.3400,73.9500,4,3,"برنالہ"],
-"Sehnsa":[33.4800,73.9000,4,3,"سہنسہ"],
-"Tatta Pani":[33.7500,73.8500,4,3,"تتہ پانی"],
-"Gilgit":[35.9208,74.3082,8,6,"گلگت"],
-"Skardu":[35.2971,75.6333,8,6,"سکردو"],
-"Chilas":[35.4164,74.1004,8,6,"چلاس"],
-"Hunza":[36.3167,74.6500,8,6,"ہنزہ"],
-"Ghanche":[35.4833,76.2667,8,6,"غنچے"],
-"Astore":[35.3700,74.8600,8,6,"آستور"],
-"Ghizer":[36.0000,73.7500,8,6,"غذر"],
-"Gupis":[36.1700,73.4000,8,6,"گوپس"],
-"Yasin":[36.4500,73.3000,8,6,"یاسین"],
-"Ishkoman":[36.6300,73.8000,8,6,"اشکومن"],
-"Nagar":[36.2500,74.5000,8,6,"نگر"],
-"Aliabad":[36.2000,74.6500,8,6,"علی آباد"],
-"Khaplu":[35.1700,76.3300,8,6,"خپلو"],
-"Shigar":[35.5000,75.7000,8,6,"شگر"],
-"Rondu":[35.4600,75.1000,8,6,"رونڈو"],
-"Islamabad":[33.6844,73.0479,4,3,"اسلام آباد"]
+"Mand":[25.9700,62.2200,0,0,"مند"],
+"Tump":[26.0000,62.8500,0,0,"تمپ"],
+"Buleda":[27.3200,63.4000,0,0,"بلیدہ"],
+"Dezghat":[27.4200,63.7000,0,0,"دیزگہاٹ"],
+"Gichk":[27.2000,63.0000,0,0,"گچک"],
+"Pasni":[25.2600,63.4700,0,0,"پسنی"],
+"Ormara":[25.2100,64.6300,0,0,"اورماڑہ"],
+"Jiwani":[25.0600,61.7400,0,0,"جیوانی"],
+"Kech":[26.0050,63.0440,0,0,"کیچ"],
+"Surab":[28.4900,66.2500,0,0,"سراب"],
+"Shahrag":[29.0200,67.3000,0,0,"شہرگ"],
+"Duki":[30.1600,68.5900,0,0,"ڈکی"],
+"Musa Khel":[30.8900,69.8400,0,0,"موسیٰ خیل"],
+"Barkhan":[29.8900,69.5300,0,0,"بارکھان"],
+"Kohlu":[29.8900,69.2500,0,0,"کوہلو"],
+"Loti":[28.5700,68.8900,0,0,"لوٹی"],
+"Pir Koh":[28.8300,68.8200,0,0,"پیر کوہ"],
+"Muzaffarabad":[34.3700,73.4700,0,0,"مظفرآباد"],
+"Mirpur AJK":[33.1500,73.7500,0,0,"میرپور"],
+"Rawalakot":[33.8582,73.7617,0,0,"راولاکوٹ"],
+"Bagh AJK":[33.9833,73.7833,0,0,"باغ"],
+"Kotli":[33.5167,73.9000,0,0,"کوٹلی"],
+"Pallandri":[33.7100,73.9300,0,0,"پلندری"],
+"Hattian Bala":[34.3200,73.8200,0,0,"ہٹیاں بالا"],
+"Athmuqam":[34.5600,73.9000,0,0,"آٹھ مقام"],
+"Shardi":[34.6500,73.7500,0,0,"شاردی"],
+"Chakothi":[34.2500,73.6300,0,0,"چکوٹھی"],
+"Dudhnial":[34.5500,73.5700,0,0,"دودھنیال"],
+"Bhimber":[32.9700,74.0800,0,0,"بھمبر"],
+"Samahni":[32.8400,74.1200,0,0,"سماہنی"],
+"Barnala":[33.3400,73.9500,0,0,"برنالہ"],
+"Sehnsa":[33.4800,73.9000,0,0,"سہنسہ"],
+"Tatta Pani":[33.7500,73.8500,0,0,"تتہ پانی"],
+"Gilgit":[35.9208,74.3082,0,0,"گلگت"],
+"Skardu":[35.2971,75.6333,0,0,"سکردو"],
+"Chilas":[35.4164,74.1004,0,0,"چلاس"],
+"Hunza":[36.3167,74.6500,0,0,"ہنزہ"],
+"Ghanche":[35.4833,76.2667,0,0,"غنچے"],
+"Astore":[35.3700,74.8600,0,0,"آستور"],
+"Ghizer":[36.0000,73.7500,0,0,"غذر"],
+"Gupis":[36.1700,73.4000,0,0,"گوپس"],
+"Yasin":[36.4500,73.3000,0,0,"یاسین"],
+"Ishkoman":[36.6300,73.8000,0,0,"اشکومن"],
+"Nagar":[36.2500,74.5000,0,0,"نگر"],
+"Aliabad":[36.2000,74.6500,0,0,"علی آباد"],
+"Khaplu":[35.1700,76.3300,0,0,"خپلو"],
+"Shigar":[35.5000,75.7000,0,0,"شگر"],
+"Rondu":[35.4600,75.1000,0,0,"رونڈو"],
+"Islamabad":[33.6844,73.0479,0,0,"اسلام آباد"]
 };
 
 
@@ -1001,10 +1027,10 @@ function calcTimes(lat,lon,date,fo=0,io=0){
 
   // Method-based angles
   const methods={
-    karachi:{fajr:18, isha:18, asr:2}, // Hanafi 18° — Pakistan standard (University of Islamic Sciences Karachi)
+    karachi:{fajr:18, isha:18, asr:2}, // Hanafi 18° — University of Islamic Sciences Karachi
     shafi:  {fajr:18, isha:18, asr:1}, // Shafi/Maliki/Hanbali — Ahlul Hadith
     mwl:    {fajr:18, isha:17, asr:1}, // Muslim World League
-    rashidi:{fajr:15, isha:15, asr:2}, // 15° Hanafi — Jamia-tur-Rasheed / Darul Uloom Korangi Karachi
+    rashidi:{fajr:15, isha:15, asr:2}, // 15° Hanafi — Jamia-tur-Rasheed / Darul Uloom Korangi
   };
   const M = methods[S.method] || methods.karachi;
 
@@ -1023,7 +1049,7 @@ function calcTimes(lat,lon,date,fo=0,io=0){
     sunrise: noon*60 - toMin(srH),
     dhuhr:   Math.round(noon*60),
     asr:     noon*60 + toMin(asrH),
-    maghrib: noon*60 + toMin(srH)  + 3,
+    maghrib: noon*60 + toMin(srH),
     isha:    noon*60 + toMin(iH)   + io,
   };
 }
@@ -1126,12 +1152,173 @@ function init(){
   updateMethodUI();
   renderFeatures();
   startClock();setupPWA();
+  // Auto schedule notifications if previously enabled
+  if(S.notif && Notification.permission==='granted'){
+    setTimeout(scheduleNotifications, 1000);
+  }
 }
 
 // ══════════════════════════════════════════════════
 // CLOCK
 // ══════════════════════════════════════════════════
 function startClock(){updateClock();setInterval(updateClock,1000);}
+
+// ══════════════════════════════════════════════════
+// AUTO LOCATION — خودکار مقام کا تعین
+// ══════════════════════════════════════════════════
+let _watchId=null;
+let _lastAutoLat=null;
+let _lastAutoLon=null;
+let _locActive=false;
+
+function requestAutoLocation(){
+  // Check if geolocation is available
+  if(!navigator.geolocation){
+    showLocStatus(S.lang==='ur'?'❌ GPS دستیاب نہیں':'❌ GPS not available','#c42b1c');
+    return;
+  }
+
+  // Check if HTTPS or localhost (required for geolocation)
+  const proto=location.protocol;
+  if(proto!=='https:'&&proto!=='file:'&&location.hostname!=='localhost'){
+    showLocStatus(S.lang==='ur'?'❌ HTTPS ضروری ہے GPS کے لیے':'❌ HTTPS required for GPS','#c42b1c');
+    return;
+  }
+
+  const btn=document.getElementById('autoLocBtn');
+  const txt=document.getElementById('autoLocTxt');
+
+  // Toggle: if already active, stop
+  if(_locActive){
+    _locActive=false;
+    if(_watchId!==null){navigator.geolocation.clearWatch(_watchId);_watchId=null;}
+    if(btn) btn.style.background='var(--green-bg)';
+    if(txt) txt.textContent=S.lang==='ur'?'خودکار مقام':'Auto Detect Location';
+    showLocStatus(S.lang==='ur'?'GPS بند کر دیا':'GPS stopped','var(--text3)');
+    return;
+  }
+
+  // Start detection
+  _locActive=true;
+  if(btn){btn.style.background='rgba(0,120,212,.15)';btn.style.opacity='0.8';}
+  if(txt) txt.textContent=S.lang==='ur'?'تلاش جاری...':'Detecting...';
+  showLocStatus(S.lang==='ur'?'⏳ GPS سگنل کا انتظار...':'⏳ Waiting for GPS...','#0078d4');
+
+  // Clear any previous watch
+  if(_watchId!==null){navigator.geolocation.clearWatch(_watchId);_watchId=null;}
+
+  // First: get quick position
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      if(btn) btn.style.opacity='1';
+      onLocationSuccess(pos,true);
+      // Then watch for changes
+      _watchId=navigator.geolocation.watchPosition(
+        pos2=>onLocationSuccess(pos2,false),
+        ()=>{},
+        {enableHighAccuracy:false,timeout:60000,maximumAge:300000}
+      );
+    },
+    err=>{
+      if(btn){btn.style.opacity='1';btn.style.background='var(--green-bg)';}
+      _locActive=false;
+      onLocationError(err);
+    },
+    {enableHighAccuracy:true,timeout:20000,maximumAge:30000}
+  );
+}
+
+function onLocationSuccess(pos,isFirst){
+  const lat=pos.coords.latitude;
+  const lon=pos.coords.longitude;
+
+  // Only update if moved significantly (~2km)
+  if(!isFirst&&_lastAutoLat!==null){
+    const dlat=lat-_lastAutoLat;
+    const dlon=lon-_lastAutoLon;
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
+    if(dist<2) return;
+  }
+  _lastAutoLat=lat; _lastAutoLon=lon;
+
+  const btn=document.getElementById('autoLocBtn');
+  const txt=document.getElementById('autoLocTxt');
+  if(btn){btn.style.opacity='1';btn.style.background='var(--green-bg)';}
+  if(txt) txt.textContent=S.lang==='ur'?'📡 GPS فعال':'📡 GPS Active';
+
+  const nearest=findNearestCity(lat,lon);
+  if(nearest){
+    // Update dropdown
+    const sel=document.getElementById('citySelect');
+    if(sel) sel.value=nearest.name;
+    S.city=nearest.name;
+    svS();
+    updatePT();updateQibla();renderMonth();updateSaved();scheduleIfEnabled();
+    showLocStatus(
+      '✅ '+nearest.name+
+      (nearest.dist<1?' (آپ کا شہر)':' (~'+nearest.dist.toFixed(0)+'km)'),
+      '#107c10'
+    );
+  } else {
+    useExactLocation(lat,lon);
+  }
+}
+
+function onLocationError(err){
+  const msgs={
+    1:S.lang==='ur'
+      ?'❌ اجازت نہیں — Browser Settings میں Location Allow کریں'
+      :'❌ Permission denied — allow Location in browser settings',
+    2:S.lang==='ur'
+      ?'❌ مقام نہیں ملا — GPS/WiFi چالو کریں'
+      :'❌ Position unavailable — enable GPS/WiFi',
+    3:S.lang==='ur'
+      ?'❌ وقت ختم — دوبارہ کوشش کریں'
+      :'❌ Timeout — please try again',
+  };
+  showLocStatus(msgs[err.code]||'❌ Location error','#c42b1c');
+}
+
+function showLocStatus(msg,color){
+  const e=document.getElementById('autoLocStatus');
+  if(!e) return;
+  e.style.display='block';
+  e.style.color=color||'var(--text3)';
+  e.textContent=msg;
+}
+
+function findNearestCity(lat,lon){
+  let best=null; let bestDist=Infinity;
+  Object.keys(C).forEach(name=>{
+    const d=C[name];
+    if(!d||d.length<2) return;
+    const dlat=lat-d[0]; const dlon=lon-d[1];
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
+    if(dist<bestDist){bestDist=dist;best={name,ur:d[4]||name,dist};}
+  });
+  return bestDist<100?best:null;
+}
+
+function useExactLocation(lat,lon){
+  // Add as temporary custom city
+  const name='My Location';
+  C[name]=[lat,lon,0,0,'میری جگہ'];
+  const sel=document.getElementById('citySelect');
+  // Remove old temp entry
+  for(let i=sel.options.length-1;i>=0;i--){
+    if(sel.options[i].value===name) sel.remove(i);
+  }
+  const opt=document.createElement('option');
+  opt.value=name; opt.textContent='📡 '+name+' (GPS)';
+  sel.insertBefore(opt,sel.options[1]);
+  sel.value=name;
+  S.city=name; svS();
+  updatePT();updateQibla();renderMonth();updateSaved();
+  showLocStatus(
+    `📡 GPS: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`,
+    '#0078d4'
+  );
+}
 // ══════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════
@@ -1204,11 +1391,9 @@ function onCityChange(){
   svS();
   if(S.city){
     updatePT();updateQibla();renderMonth();
-    
-    el('editBtnTxt').textContent=S.lang==='ur'?'coordinates ترمیم':'Edit Coordinates';
-  } else {
-    
-    
+    scheduleIfEnabled();
+    const ebt=el('editBtnTxt');
+    if(ebt) ebt.textContent=S.lang==='ur'?'coordinates ترمیم':'Edit Coordinates';
   }
   updateSaved();
 }
@@ -1220,13 +1405,13 @@ function updatePT(){
   setText('hCityEn', S.lang==='ur' ? ur : S.city);
   setText('hCityUr', '');
   const prayers=[
-    {k:'fajr',   dot:'pd-fajr',    en:'Fajr',    ur:'فجر',         m:times.fajr},
-    {k:'sunrise',dot:'pd-sunrise', en:'Sunrise', ur:'طلوع آفتاب',  m:times.sunrise},
-    {k:'ishraq', dot:'pd-ishraq',  en:'Ishraq',  ur:'اشراق',       m:times.sunrise+20},
-    {k:'dhuhr',  dot:'pd-dhuhr',   en:'Dhuhr',   ur:'ظہر',         m:times.dhuhr},
-    {k:'asr',    dot:'pd-asr',     en:'Asr',     ur:'عصر',         m:times.asr},
-    {k:'maghrib',dot:'pd-maghrib', en:'Maghrib', ur:'مغرب',        m:times.maghrib},
-    {k:'isha',   dot:'pd-isha',    en:'Isha',    ur:'عشاء',        m:times.isha},
+    {k:'fajr',   dot:'pd-fajr',    en:'Fajr',        ur:'فجر',              m:times.fajr},
+    {k:'sunrise',dot:'pd-sunrise', en:'Sunrise',     ur:'طلوع آفتاب',       m:times.sunrise},
+    {k:'ishraq', dot:'pd-ishraq',  en:'Ishraq',      ur:'اشراق',            m:times.sunrise+20},
+    {k:'dhuhr',  dot:'pd-dhuhr',   en:'Dhuhr',       ur:'ظہر',              m:times.dhuhr},
+    {k:'asr',    dot:'pd-asr',     en:'Asr',         ur:'عصر',              m:times.asr},
+    {k:'maghrib',dot:'pd-maghrib', en:'Maghrib',     ur:'مغرب',             m:times.maghrib},
+    {k:'isha',   dot:'pd-isha',    en:'Isha',        ur:'عشاء',             m:times.isha},
   ];
   const nowM=new Date().getHours()*60+new Date().getMinutes();
   const list=document.getElementById('prayerList');
@@ -1295,18 +1480,6 @@ function updateNext(){
 // ══════════════════════════════════════════════════
 // QIBLA
 // ══════════════════════════════════════════════════
-function updateQibla(){
-  if(!S.city||!C[S.city])return;
-  const [lat,lon]=C[S.city];
-  const mLat=21.4225,mLon=39.8262;
-  const dL=R(mLon-lon);
-  const y=Math.sin(dL)*Math.cos(R(mLat));
-  const x=Math.cos(R(lat))*Math.sin(R(mLat))-Math.sin(R(lat))*Math.cos(R(mLat))*Math.cos(dL);
-  const brg=((D(Math.atan2(y,x)))+360)%360;
-  document.getElementById('qNeedle').style.transform=`rotate(${brg}deg)`;
-  document.getElementById('qDeg').textContent=Math.round(brg)+'°';
-  document.getElementById('qCity').textContent=`From ${S.city} (${C[S.city][4]}) → Makkah al-Mukarramah`;
-}
 
 // ══════════════════════════════════════════════════
 // MONTHLY TABLE
@@ -1371,22 +1544,27 @@ function toggleLang(){S.lang=S.lang==='en'?'ur':'en';applyLang();if(S.city)updat
 function renderFeatures(){
   const isUr=S.lang==='ur';
   const feats=[
-    {ico:'🕐',en:'Prayer Times',   ur:'نماز کے اوقات',     bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'📴',en:'Fully Offline',  ur:'مکمل آف لائن',      bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
-    {ico:'🏙️',en:'500+ Cities',    ur:'500+ پاکستانی شہر',  bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
-    {ico:'🌐',en:'Urdu & English', ur:'اردو اور انگریزی',  bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'🧭',en:'Qibla Direction',ur:'قبلہ کی سمت',      bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
-    {ico:'🌙',en:'Hijri Calendar (+ Date Converter)', ur:'ہجری کیلنڈر (+ تاریخ کنورٹر)',      bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'🔄',en:'Date Converter', ur:'تاریخ کنورٹر',     bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
-    {ico:'📌',en:'Custom City',    ur:'اپنا شہر ایڈ کریں', bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
-    {ico:'📲',en:'Install as App', ur:'ہوم اسکرین شارٹ کٹ',bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
+    {ico:'🕐',en:'Prayer Times',        ur:'نماز کے اوقات',       bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
+    {ico:'📴',en:'Fully Offline',       ur:'مکمل آف لائن',        bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
+    {ico:'🏙️',en:'500+ Cities',         ur:'500+ پاکستانی شہر',   bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
+    {ico:'🌐',en:'Urdu & English',      ur:'اردو اور انگریزی',    bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
+    {ico:'🧭',en:'Qibla Direction',     ur:'قبلہ کی سمت',         bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
+    {ico:'🔄',en:'Date Converter',      ur:'تاریخ کنورٹر',        bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
+    {ico:'📌',en:'Custom City',         ur:'اپنا شہر ایڈ کریں',  bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
+    {ico:'📲',en:'Install as App',      ur:'ہوم اسکرین شارٹ کٹ', bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
   ];
+  // Date Converter description
+  const cvDesc=isUr
+    ?'کسی بھی تاریخ کو ہجری↔عیسوی میں تبدیل کریں'
+    :'Convert any date: Gregorian↔Hijri (past & future)';
+
   const grid=document.getElementById('featGrid');
   if(!grid) return;
   grid.innerHTML=feats.map(f=>`
     <div style="background:${f.bg};border:1px solid ${f.bc};border-radius:10px;padding:11px 10px;text-align:center;">
       <div style="font-size:22px;margin-bottom:6px;">${f.ico}</div>
       <div style="font-size:12px;font-weight:700;color:${f.cl};${isUr?'font-family:Noto Nastaliq Urdu,serif;':''}">${isUr?f.ur:f.en}</div>
+      ${f.ico==='🔄'?`<div style="font-size:9px;color:var(--text3);margin-top:3px;${isUr?'font-family:Noto Nastaliq Urdu,serif;':''}">${cvDesc}</div>`:''}
     </div>`).join('');
   const ft=document.getElementById('featTitle');
   if(ft) ft.textContent=isUr?'خصوصیات':'App Features';
@@ -1403,6 +1581,8 @@ function applyLang(){
   setText('lbl6', t('t6'));
   setText('lbl7', t('t7'));
   setText('cityLbl', t('city'));
+  const alt=document.getElementById('autoLocTxt');
+  if(alt) alt.textContent=S.lang==='ur'?'خودکار مقام':'Auto Detect Location';
   setText('ptLbl', t('pt'));
   setText('qiblaLbl', t('qibla'));
   setText('mnthLbl', t('monthly'));
@@ -1413,8 +1593,9 @@ function applyLang(){
   setText('clrBtn', t('clr'));
   setText('instTtl', t('inst'));
   setText('instSub', t('instS'));
-  setText('devRole', t('devRole'));
-  setText('devUni', t('devUni'));
+  // Developer info — ALWAYS English regardless of language
+  setText('devRole', 'Assistant Professor');
+  setText('devUni', 'Hazara University, Mansehra');
   setText('featTitle', t('featTitle'));
   setText('aboutSubtitle', isUr?'پاکستان نماز اوقات ایپ':'Pakistan Prayer Times App');
   const sel=el('citySelect');
@@ -1436,7 +1617,163 @@ function applyLang(){
   updateClock();
 }
 function saveSt(){S.use12=document.getElementById('fmTgl').checked;svS();if(S.city)updatePT();}
-function toggleNotif(){S.notif=document.getElementById('ntTgl').checked;if(S.notif&&'Notification'in window)Notification.requestPermission();svS();}
+function toggleNotif(){
+  const tgl=document.getElementById('ntTgl');
+  const want=tgl.checked;
+
+  // If turning OFF
+  if(!want){
+    S.notif=false;
+    svS();
+    cancelNotifications();
+    return;
+  }
+
+  // If turning ON
+  if(!('Notification' in window)){
+    tgl.checked=false;
+    alert('این ایپ میں نوٹیفکیشن سپورٹ نہیں ہے\nNotifications not supported in this browser');
+    return;
+  }
+
+  // Already granted
+  if(Notification.permission==='granted'){
+    S.notif=true;
+    svS();
+    scheduleNotifications();
+    try{
+      new Notification('SM Prayer Times 🕌',{
+        body:S.lang==='ur'?'نماز کی یاد دہانی فعال ✅':'Prayer notifications enabled ✅',
+        icon:'data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 viewBox%3D%220 0 100 100%22%3E%3Crect width%3D%22100%22 height%3D%22100%22 rx%3D%2220%22 fill%3D%22%230078d4%22/%3E%3Ctext y%3D%22.9em%22 font-size%3D%2280%22%3E%F0%9F%95%8C%3C/text%3E%3C/svg%3E',
+        tag:'sm-enable'
+      });
+    }catch(e){}
+    return;
+  }
+
+  // Need to request permission
+  if(Notification.permission==='denied'){
+    tgl.checked=false;
+    S.notif=false;
+    svS();
+    alert(S.lang==='ur'
+      ?"براہ کرم Browser Settings میں نوٹیفکیشن Allow کریں"
+      :"Please enable notifications in Browser Settings");
+    return;
+  }
+
+  // Ask permission (default state)
+  Notification.requestPermission().then(perm=>{
+    if(perm==='granted'){
+      S.notif=true;
+      tgl.checked=true;
+      svS();
+      scheduleNotifications();
+      try{
+        new Notification('SM Prayer Times 🕌',{
+          body:S.lang==='ur'?'نماز کی یاد دہانی فعال ✅':'Prayer notifications enabled ✅',
+          tag:'sm-enable'
+        });
+      }catch(e){}
+    } else {
+      S.notif=false;
+      tgl.checked=false;
+      svS();
+      alert(S.lang==='ur'
+        ?"نوٹیفکیشن کی اجازت نہیں ملی"
+        :"Notification permission denied");
+    }
+  }).catch(()=>{
+    // Fallback for browsers that don't support promise
+    S.notif=true;
+    svS();
+    scheduleNotifications();
+  });
+}
+
+// Schedule prayer notifications
+let _notifTimers=[];
+function cancelNotifications(){
+  _notifTimers.forEach(t=>clearTimeout(t));
+  _notifTimers=[];
+}
+
+function scheduleNotifications(){
+  if(!S.notif||!window._PT||Notification.permission!=='granted') return;
+  cancelNotifications();
+
+  const now=new Date();
+  const nowMs=now.getTime();
+  const prayers=[
+    {k:'fajr',   en:'Fajr',    ur:'فجر',    m:window._PT.fajr},
+    {k:'dhuhr',  en:'Dhuhr',   ur:'ظہر',    m:window._PT.dhuhr},
+    {k:'asr',    en:'Asr',     ur:'عصر',    m:window._PT.asr},
+    {k:'maghrib',en:'Maghrib', ur:'مغرب',   m:window._PT.maghrib},
+    {k:'isha',   en:'Isha',    ur:'عشاء',   m:window._PT.isha},
+  ];
+
+  const todayBase=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+
+  prayers.forEach(p=>{
+    if(p.m===null) return;
+    // Prayer time in ms today
+    const pMs = todayBase + p.m * 60000;
+    // 10 min before
+    const before10 = pMs - 10*60000;
+    // At prayer time
+    const atTime = pMs;
+
+    // 10 min before notification
+    const diff10 = before10 - nowMs;
+    if(diff10 > 0){
+      const t=setTimeout(()=>{
+        if(!S.notif) return;
+        new Notification(`SM Prayer Times 🕌`, {
+          body: S.lang==='ur'
+            ? `${p.ur} کا وقت 10 منٹ بعد ہے 🕐`
+            : `${p.en} prayer in 10 minutes 🕐`,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230078d4"/><text y=".9em" font-size="80">🕌</text></svg>',
+          tag: `sm-before-${p.k}`,
+          requireInteraction: false,
+        });
+      }, diff10);
+      _notifTimers.push(t);
+    }
+
+    // At prayer time notification
+    const diffAt = atTime - nowMs;
+    if(diffAt > 0){
+      const t=setTimeout(()=>{
+        if(!S.notif) return;
+        new Notification(`${S.lang==='ur'?p.ur:p.en} — نماز کا وقت ہو گیا 🕌`, {
+          body: S.lang==='ur'
+            ? `${p.ur} کا وقت ہو گیا — نماز پڑھیں`
+            : `Time for ${p.en} prayer`,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23107c10"/><text y=".9em" font-size="80">🕌</text></svg>',
+          tag: `sm-at-${p.k}`,
+          requireInteraction: true,
+          vibrate: [200, 100, 200],
+        });
+      }, diffAt);
+      _notifTimers.push(t);
+    }
+  });
+
+  // Reschedule at midnight for next day
+  const midnight = todayBase + 24*60*60000;
+  const tillMidnight = midnight - nowMs;
+  if(tillMidnight > 0){
+    const t=setTimeout(()=>{
+      if(S.notif && window._PT) scheduleNotifications();
+    }, tillMidnight + 60000);
+    _notifTimers.push(t);
+  }
+}
+
+// Auto schedule when city selected - using flag to avoid infinite loop
+function scheduleIfEnabled(){
+  if(S.notif && Notification.permission==='granted') setTimeout(scheduleNotifications, 500);
+}
 
 function setMethod(m){
   S.method=m;svS();
@@ -1947,27 +2284,243 @@ window.addEventListener('DOMContentLoaded',init);
 // ══════════════════════════════════════════════════
 // SERVICE WORKER — مکمل آف لائن
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// SERVICE WORKER — مکمل آف لائن
+// ══════════════════════════════════════════════════
 if('serviceWorker' in navigator){
-  // Inline service worker as blob
   const swCode=`
-    const CACHE='sm-prayer-v1';
-    const FILES=['/'];
-    self.addEventListener('install',e=>{
-      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));
+const CACHE='sm-prayer-v3';
+const URLS=[self.registration.scope];
+self.addEventListener('install',e=>{
+  self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE).then(c=>{
+      return fetch(self.registration.scope).then(r=>{
+        if(r.ok) return c.put(self.registration.scope,r);
+      }).catch(()=>{});
+    })
+  );
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(keys=>Promise.all(
+      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
+    )).then(()=>self.clients.claim())
+  );
+});
+self.addEventListener('fetch',e=>{
+  // Cache-first for same-origin, network-first for others
+  if(e.request.url.startsWith(self.registration.scope)){
+    e.respondWith(
+      caches.match(e.request).then(cached=>{
+        const network=fetch(e.request).then(res=>{
+          if(res&&res.ok){
+            const clone=res.clone();
+            caches.open(CACHE).then(c=>c.put(e.request,clone));
+          }
+          return res;
+        }).catch(()=>cached||new Response('Offline',{status:503}));
+        return cached||network;
+      })
+    );
+  }
+});`;
+  try{
+    const blob=new Blob([swCode],{type:'application/javascript'});
+    const url=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url,{scope:'./'}).catch(()=>{});
+  }catch(e){}
+}
+</script>
+
+<script>
+// ══════════════════════════════════════════════════
+// QIBLA COMPASS — مکمل compass system
+// ══════════════════════════════════════════════════
+let _qiblaBrg=null;
+let _compassOn=false;
+let _smoothHeading=null;
+let _calibrating=false;
+const SMOOTH=0.15; // smoothing factor (lower = smoother but slower)
+
+function updateQibla(){
+  if(!S.city||!C[S.city]) return;
+  const [lat,lon]=C[S.city];
+
+  // Calculate Qibla bearing using Haversine/bearing formula
+  const lat1=lat*Math.PI/180;
+  const mLat=21.4225*Math.PI/180;
+  const dLon=(39.8262-lon)*Math.PI/180;
+  const y=Math.sin(dLon)*Math.cos(mLat);
+  const x=Math.cos(lat1)*Math.sin(mLat)-Math.sin(lat1)*Math.cos(mLat)*Math.cos(dLon);
+  _qiblaBrg=((Math.atan2(y,x)*180/Math.PI)+360)%360;
+
+  // Update static display
+  const qd=document.getElementById('qDeg');
+  if(qd) qd.textContent=Math.round(_qiblaBrg)+'°';
+  const qc=document.getElementById('qCity');
+  if(qc) qc.textContent=S.city+' \u2192 Makkah al-Mukarramah';
+
+  // Show static bearing on needle (before compass starts)
+  if(!_compassOn){
+    const nd=document.getElementById('qNeedle');
+    if(nd) nd.style.transform=`rotate(${_qiblaBrg}deg)`;
+    const qs=document.getElementById('qiblaStatus');
+    if(qs) qs.textContent=S.lang==='ur'?'Compass چالو کریں':'Tap button to start compass';
+  }
+
+  // Try to start compass automatically
+  initCompass();
+}
+
+function initCompass(){
+  if(_compassOn) return;
+
+  // iOS 13+ needs explicit permission
+  if(typeof DeviceOrientationEvent!=='undefined'&&
+     typeof DeviceOrientationEvent.requestPermission==='function'){
+    const pb=document.getElementById('compassPermBtn');
+    if(pb) pb.style.display='block';
+    const sb=document.getElementById('compassStartBtn');
+    if(sb) sb.style.display='none';
+    return;
+  }
+
+  // Android/others — try directly
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    // Check if sensors are actually available
+    const handler=e=>{
+      if(e.alpha!==null){
+        window.removeEventListener('deviceorientation',handler);
+        // Sensors work!
+        _compassOn=true;
+        const sb=document.getElementById('compassStartBtn');
+        if(sb) sb.style.display='none';
+        window.addEventListener('deviceorientationabsolute',handleCompass,true);
+        window.addEventListener('deviceorientation',handleCompass,true);
+        const qs=document.getElementById('qiblaStatus');
+        if(qs) qs.textContent=S.lang==='ur'?'🧭 Compass فعال':'🧭 Compass active';
+      } else {
+        // No sensor data
+        window.removeEventListener('deviceorientation',handler);
+        showCompassFallback();
+      }
+    };
+    window.addEventListener('deviceorientation',handler,{once:false});
+    // If no event after 2s, show manual button
+    setTimeout(()=>{
+      if(!_compassOn) showCompassFallback();
+    },2500);
+  } else {
+    showCompassFallback();
+  }
+}
+
+function showCompassFallback(){
+  const sb=document.getElementById('compassStartBtn');
+  if(sb) sb.style.display='block';
+  const qs=document.getElementById('qiblaStatus');
+  if(qs) qs.textContent=S.lang==='ur'
+    ?'Compass شروع کرنے کے لیے بٹن دبائیں'
+    :'Press button to start compass';
+}
+
+function startCompassManual(){
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    _compassOn=true;
+    const sb=document.getElementById('compassStartBtn');
+    if(sb) sb.style.display='none';
+    window.addEventListener('deviceorientationabsolute',handleCompass,true);
+    window.addEventListener('deviceorientation',handleCompass,true);
+    const qs=document.getElementById('qiblaStatus');
+    if(qs) qs.textContent=S.lang==='ur'?'🧭 Compass فعال':'🧭 Compass active';
+  }
+}
+
+function requestCompassPermission(){
+  if(typeof DeviceOrientationEvent.requestPermission==='function'){
+    DeviceOrientationEvent.requestPermission().then(p=>{
+      if(p==='granted'){
+        _compassOn=true;
+        window.addEventListener('deviceorientationabsolute',handleCompass,true);
+        window.addEventListener('deviceorientation',handleCompass,true);
+        const pb=document.getElementById('compassPermBtn');
+        if(pb) pb.style.display='none';
+        const qs=document.getElementById('qiblaStatus');
+        if(qs) qs.textContent='🧭 Compass active';
+      } else {
+        const qs=document.getElementById('qiblaStatus');
+        if(qs) qs.textContent='❌ Permission denied';
+      }
+    }).catch(err=>{
+      const qs=document.getElementById('qiblaStatus');
+      if(qs) qs.textContent='❌ '+err.message;
     });
-    self.addEventListener('activate',e=>{
-      e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
-    });
-    self.addEventListener('fetch',e=>{
-      e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-        if(res.ok){const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));}
-        return res;
-      }).catch(()=>caches.match('/'))));
-    });
-  `;
-  const blob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  }
+}
+
+function calibrateCompass(){
+  _calibrating=true;
+  _smoothHeading=null;
+  const qa=document.getElementById('qiblaAccuracy');
+  if(qa) qa.textContent='';
+  const qs=document.getElementById('qiblaStatus');
+  if(qs) qs.textContent=S.lang==='ur'
+    ?"🔄 موبائل کو ∞ شکل میں تین بار گھمائیں..."
+    :"🔄 Move phone in figure-8 pattern 3 times...";
+  setTimeout(()=>{
+    _calibrating=false;
+    if(qs) qs.textContent=S.lang==='ur'?'✅ Calibration مکمل':'✅ Calibration complete';
+  },5000);
+}
+
+let _absHeadingUsed=false;
+function handleCompass(e){
+  if(_qiblaBrg===null||_calibrating) return;
+
+  let heading=null;
+
+  // Priority: absolute orientation > iOS webkit > regular orientation
+  if(e.type==='deviceorientationabsolute'&&e.absolute===true&&e.alpha!=null){
+    heading=(360-e.alpha+360)%360;
+    _absHeadingUsed=true;
+  } else if(e.webkitCompassHeading!=null){
+    // iOS — provides true north directly
+    heading=e.webkitCompassHeading;
+    _absHeadingUsed=true;
+  } else if(!_absHeadingUsed&&e.alpha!=null){
+    // Android non-absolute fallback
+    heading=(360-e.alpha+360)%360;
+    // Apply magnetic declination (~2.5° for Pakistan)
+    heading=(heading+2.5+360)%360;
+  }
+
+  if(heading===null) return;
+
+  // Low-pass filter for smooth rotation
+  if(_smoothHeading===null){
+    _smoothHeading=heading;
+  } else {
+    let diff=heading-_smoothHeading;
+    // Handle 0°/360° wraparound
+    if(diff>180) diff-=360;
+    if(diff<-180) diff+=360;
+    _smoothHeading=(_smoothHeading+diff*SMOOTH+360)%360;
+  }
+
+  // Rotate needle: qibla bearing relative to device heading
+  const rotation=(_qiblaBrg-_smoothHeading+360)%360;
+  const nd=document.getElementById('qNeedle');
+  if(nd) nd.style.transform=`rotate(${rotation}deg)`;
+
+  // Show accuracy message
+  const qa=document.getElementById('qiblaAccuracy');
+  if(qa){
+    const diff=Math.min(rotation,360-rotation);
+    if(diff<10) qa.textContent='✅ قبلہ رو ہیں!';
+    else if(diff<25) qa.textContent='↻ تھوڑا اور مڑیں';
+    else qa.textContent=`${Math.round(_qiblaBrg)}° North سے`;
+  }
 }
 </script>
 </body>
