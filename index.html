@@ -1072,7 +1072,25 @@ function fmtRaw(mins){
 // STATE
 // ══════════════════════════════════════════════════
 let S={city:'',lang:'en',dark:false,use12:true,notif:false,method:'karachi'};
-function ldS(){try{Object.assign(S,JSON.parse(localStorage.getItem('smp')||'{}'));}catch(e){}}
+function ldS(){
+  try{Object.assign(S,JSON.parse(localStorage.getItem('smp')||'{}'));}catch(e){}
+  // Restore GPS location if it was last used
+  try{
+    const gps=JSON.parse(localStorage.getItem('smGPS')||'null');
+    if(gps&&S.city==='__gps__'){
+      C['__gps__']=[gps.lat,gps.lon,0,0,gps.name||'میری جگہ (GPS)'];
+    }
+  }catch(e){}
+}
+function svS(){
+  try{localStorage.setItem('smp',JSON.stringify(S));}catch(e){}
+  // Save GPS coordinates separately
+  if(S.city==='__gps__'&&C['__gps__']){
+    try{localStorage.setItem('smGPS',JSON.stringify({
+      lat:C['__gps__'][0],lon:C['__gps__'][1],name:C['__gps__'][4]
+    }));}catch(e){}
+  }
+}
 function svS(){try{localStorage.setItem('smp',JSON.stringify(S));}catch(e){}}
 
 // ══════════════════════════════════════════════════
@@ -1144,8 +1162,8 @@ function init(){
   loadEditedCoords();
   loadCustomCities();
   if(S.city&&C[S.city]){
-    sel.value=S.city;updatePT();updateQibla();renderMonth();
-    
+    sel.value=S.city==='__gps__'?'__gps__':S.city;
+    updatePT();updateQibla();renderMonth();
   }
   initHijri();
   renderCustList();
@@ -1231,13 +1249,14 @@ function requestAutoLocation(){
 function onLocationSuccess(pos,isFirst){
   const lat=pos.coords.latitude;
   const lon=pos.coords.longitude;
+  const acc=pos.coords.accuracy; // meters
 
-  // Only update if moved significantly (~2km)
+  // Only update if moved significantly (~1km) after first fix
   if(!isFirst&&_lastAutoLat!==null){
     const dlat=lat-_lastAutoLat;
     const dlon=lon-_lastAutoLon;
     const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
-    if(dist<2) return;
+    if(dist<1) return;
   }
   _lastAutoLat=lat; _lastAutoLon=lon;
 
@@ -1246,22 +1265,111 @@ function onLocationSuccess(pos,isFirst){
   if(btn){btn.style.opacity='1';btn.style.background='var(--green-bg)';}
   if(txt) txt.textContent=S.lang==='ur'?'📡 GPS فعال':'📡 GPS Active';
 
-  const nearest=findNearestCity(lat,lon);
-  if(nearest){
-    // Update dropdown
-    const sel=document.getElementById('citySelect');
-    if(sel) sel.value=nearest.name;
-    S.city=nearest.name;
-    svS();
-    updatePT();updateQibla();renderMonth();updateSaved();scheduleIfEnabled();
+  // ──────────────────────────────────────────────
+  // STEP 1: Always use exact GPS coords for prayer times
+  // This works for ANY location — no city list needed!
+  // ──────────────────────────────────────────────
+  useGPSLocation(lat, lon, acc);
+
+  // ──────────────────────────────────────────────
+  // STEP 2: Try to get city name (optional — for display only)
+  // Try reverse geocoding via free API
+  // ──────────────────────────────────────────────
+  getCityName(lat, lon);
+}
+
+// Use GPS coordinates DIRECTLY for prayer times — no city list needed
+function useGPSLocation(lat, lon, acc){
+  const GPS_KEY = '__gps__';
+
+  // Register GPS location as a virtual city in memory
+  C[GPS_KEY] = [lat, lon, 0, 0, 'میری جگہ (GPS)'];
+
+  // Add/update option in dropdown
+  const sel = document.getElementById('citySelect');
+  if(sel){
+    // Remove old GPS entry if exists
+    for(let i=sel.options.length-1;i>=0;i--){
+      if(sel.options[i].value===GPS_KEY) sel.remove(i);
+    }
+    // Insert at top (after default option)
+    const opt = document.createElement('option');
+    opt.value = GPS_KEY;
+    opt.textContent = '📡 My GPS Location';
+    opt.style.color = '#0078d4';
+    opt.style.fontWeight = '700';
+    sel.insertBefore(opt, sel.options[1]||null);
+    sel.value = GPS_KEY;
+  }
+
+  // Set as active city
+  S.city = GPS_KEY;
+  svS();
+
+  // Calculate prayer times from GPS coordinates
+  updatePT();
+  updateQibla();
+  renderMonth();
+  updateSaved();
+  scheduleIfEnabled();
+
+  // Show status
+  const accText = acc<50?'±'+Math.round(acc)+'m':'';
+  showLocStatus(
+    '✅ GPS: '+lat.toFixed(4)+'°N, '+lon.toFixed(4)+'°E '+accText,
+    '#107c10'
+  );
+}
+
+// Try to get human-readable city name (for display only)
+function getCityName(lat, lon){
+  // First check our city list for nearby city (for display name)
+  let nearest=null; let bestDist=Infinity;
+  Object.keys(C).forEach(name=>{
+    if(name==='__gps__') return;
+    const d=C[name];
+    if(!d||d.length<2) return;
+    const dlat=lat-d[0]; const dlon=lon-d[1];
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
+    if(dist<bestDist){bestDist=dist;nearest={name,ur:d[4]||name,dist};}
+  });
+
+  // If very close to a known city (<15km), use its name for display
+  if(nearest && nearest.dist<15){
+    // Update display name only — keep GPS coords for calculation
+    const GPS_KEY='__gps__';
+    C[GPS_KEY][4]= nearest.ur + ' (GPS)';
+    setText('hCityEn', S.lang==='ur' ? nearest.ur : nearest.name);
     showLocStatus(
-      '✅ '+nearest.name+
-      (nearest.dist<1?' (آپ کا شہر)':' (~'+nearest.dist.toFixed(0)+'km)'),
+      '✅ '+nearest.name+' (~'+nearest.dist.toFixed(1)+'km) — GPS coordinates',
       '#107c10'
     );
-  } else {
-    useExactLocation(lat,lon);
+    return;
   }
+
+  // Try Nominatim reverse geocoding (free, no key needed)
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{
+    headers:{'Accept':'application/json','User-Agent':'SMPrayerTimes/1.0'}
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    const GPS_KEY='__gps__';
+    const addr=data.address||{};
+    const cityName=addr.city||addr.town||addr.village||addr.county||addr.state||'GPS Location';
+    const urduName='میری جگہ (GPS)';
+
+    // Update display name
+    C[GPS_KEY][4]=urduName;
+    setText('hCityEn', S.lang==='ur'?urduName:cityName);
+    showLocStatus('✅ '+cityName+' (GPS)','#107c10');
+  })
+  .catch(()=>{
+    // No internet — GPS coords still work perfectly offline
+    showLocStatus(
+      '✅ GPS: '+lat.toFixed(4)+'°N, '+lat.toFixed(4)+'°E',
+      '#107c10'
+    );
+  });
 }
 
 function onLocationError(err){
@@ -1287,38 +1395,6 @@ function showLocStatus(msg,color){
   e.textContent=msg;
 }
 
-function findNearestCity(lat,lon){
-  let best=null; let bestDist=Infinity;
-  Object.keys(C).forEach(name=>{
-    const d=C[name];
-    if(!d||d.length<2) return;
-    const dlat=lat-d[0]; const dlon=lon-d[1];
-    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
-    if(dist<bestDist){bestDist=dist;best={name,ur:d[4]||name,dist};}
-  });
-  return bestDist<100?best:null;
-}
-
-function useExactLocation(lat,lon){
-  // Add as temporary custom city
-  const name='My Location';
-  C[name]=[lat,lon,0,0,'میری جگہ'];
-  const sel=document.getElementById('citySelect');
-  // Remove old temp entry
-  for(let i=sel.options.length-1;i>=0;i--){
-    if(sel.options[i].value===name) sel.remove(i);
-  }
-  const opt=document.createElement('option');
-  opt.value=name; opt.textContent='📡 '+name+' (GPS)';
-  sel.insertBefore(opt,sel.options[1]);
-  sel.value=name;
-  S.city=name; svS();
-  updatePT();updateQibla();renderMonth();updateSaved();
-  showLocStatus(
-    `📡 GPS: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`,
-    '#0078d4'
-  );
-}
 // ══════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════
