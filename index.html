@@ -1251,12 +1251,12 @@ function onLocationSuccess(pos,isFirst){
   const lon=pos.coords.longitude;
   const acc=pos.coords.accuracy; // meters
 
-  // Only update if moved significantly (~1km) after first fix
+  // Only update if moved significantly (~500m) after first fix
   if(!isFirst&&_lastAutoLat!==null){
     const dlat=lat-_lastAutoLat;
     const dlon=lon-_lastAutoLon;
     const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
-    if(dist<1) return;
+    if(dist<0.5) return; // 500m threshold
   }
   _lastAutoLat=lat; _lastAutoLon=lon;
 
@@ -1321,54 +1321,99 @@ function useGPSLocation(lat, lon, acc){
   );
 }
 
-// Try to get human-readable city name (for display only)
+// Reverse geocoding — exact area/village/neighbourhood name
+// Called every time GPS updates — shows precise current location
 function getCityName(lat, lon){
-  // First check our city list for nearby city (for display name)
-  let nearest=null; let bestDist=Infinity;
-  Object.keys(C).forEach(name=>{
-    if(name==='__gps__') return;
-    const d=C[name];
-    if(!d||d.length<2) return;
-    const dlat=lat-d[0]; const dlon=lon-d[1];
-    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111;
-    if(dist<bestDist){bestDist=dist;nearest={name,ur:d[4]||name,dist};}
-  });
+  const GPS_KEY='__gps__';
 
-  // If very close to a known city (<15km), use its name for display
-  if(nearest && nearest.dist<15){
-    // Update display name only — keep GPS coords for calculation
-    const GPS_KEY='__gps__';
-    C[GPS_KEY][4]= nearest.ur + ' (GPS)';
-    setText('hCityEn', S.lang==='ur' ? nearest.ur : nearest.name);
-    showLocStatus(
-      '✅ '+nearest.name+' (~'+nearest.dist.toFixed(1)+'km) — GPS coordinates',
-      '#107c10'
-    );
-    return;
-  }
-
-  // Try Nominatim reverse geocoding (free, no key needed)
-  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{
-    headers:{'Accept':'application/json','User-Agent':'SMPrayerTimes/1.0'}
+  // Always try Nominatim first for exact area name
+  // zoom=16 gives neighbourhood/village level precision
+  fetch(
+    `https://nominatim.openstreetmap.org/reverse`+
+    `?lat=${lat}&lon=${lon}&format=json&zoom=16&addressdetails=1&accept-language=en`,
+    {
+      headers:{
+        'Accept':'application/json',
+        'User-Agent':'SMPrayerTimes/1.0 (Islamic prayer times app)'
+      }
+    }
+  )
+  .then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
   })
-  .then(r=>r.json())
   .then(data=>{
-    const GPS_KEY='__gps__';
-    const addr=data.address||{};
-    const cityName=addr.city||addr.town||addr.village||addr.county||addr.state||'GPS Location';
-    const urduName='میری جگہ (GPS)';
+    const addr = data.address || {};
 
-    // Update display name
-    C[GPS_KEY][4]=urduName;
-    setText('hCityEn', S.lang==='ur'?urduName:cityName);
-    showLocStatus('✅ '+cityName+' (GPS)','#107c10');
+    // Build precise location name — from most specific to least specific
+    // Priority: neighbourhood > suburb > village > town > city > county > state
+    const specific =
+      addr.neighbourhood ||
+      addr.suburb        ||
+      addr.quarter       ||
+      addr.hamlet        ||
+      addr.village       ||
+      addr.town          ||
+      addr.city_district ||
+      addr.city          ||
+      addr.county        ||
+      addr.state_district||
+      addr.state         ||
+      null;
+
+    // Build full display name with parent area for context
+    let displayName = '';
+    if(specific){
+      // Add parent for context (e.g. "Qalandarabad, Abbottabad")
+      const parent =
+        addr.city         ||
+        addr.town         ||
+        addr.county       ||
+        addr.state_district||
+        addr.state        ||
+        '';
+      displayName = specific;
+      if(parent && parent !== specific){
+        displayName += ', ' + parent;
+      }
+    } else {
+      displayName = data.display_name
+        ? data.display_name.split(',').slice(0,2).join(',')
+        : 'GPS Location';
+    }
+
+    // Update in-memory city record
+    C[GPS_KEY][4] = displayName;
+
+    // Update hero display
+    setText('hCityEn', S.lang==='ur' ? displayName : displayName);
+
+    // Update dropdown option text
+    const sel = document.getElementById('citySelect');
+    if(sel){
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].value===GPS_KEY){
+          sel.options[i].textContent = '📡 '+displayName;
+          break;
+        }
+      }
+    }
+
+    // Save updated name
+    try{
+      const gps=JSON.parse(localStorage.getItem('smGPS')||'{}');
+      gps.name=displayName;
+      localStorage.setItem('smGPS',JSON.stringify(gps));
+    }catch(e){}
+
+    showLocStatus('📍 '+displayName,'#107c10');
   })
   .catch(()=>{
-    // No internet — GPS coords still work perfectly offline
-    showLocStatus(
-      '✅ GPS: '+lat.toFixed(4)+'°N, '+lat.toFixed(4)+'°E',
-      '#107c10'
-    );
+    // Offline fallback — use coordinates (prayer times still work!)
+    const fallback = lat.toFixed(4)+'°N, '+lon.toFixed(4)+'°E';
+    C[GPS_KEY][4] = 'GPS Location';
+    setText('hCityEn', 'GPS Location');
+    showLocStatus('📡 '+fallback+' (offline)','#0078d4');
   });
 }
 
