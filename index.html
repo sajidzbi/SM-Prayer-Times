@@ -244,16 +244,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div id="savedChip"></div>
       </div>
       <div class="cb" style="padding-top:8px;padding-bottom:10px;">
-        <div class="sel-wrap" style="margin:0 0 8px 0;">
+        <div class="sel-wrap" style="margin:0;">
           <select id="citySelect" onchange="onCityChange()"><option value="">-- Choose City --</option></select>
           <div class="sel-arr">▼</div>
         </div>
-        <!-- Auto Location Button -->
-        <button onclick="requestAutoLocation()" id="autoLocBtn"
-          style="width:100%;padding:9px;background:var(--green-bg);border:1px solid rgba(16,124,16,.2);border-radius:var(--r);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-          <span>📡</span><span id="autoLocTxt">Auto Detect Location</span>
-        </button>
-        <div id="autoLocStatus" style="font-size:11px;color:var(--text3);text-align:center;margin-top:4px;display:none;"></div>
       </div>
     </div>
 
@@ -549,6 +543,61 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="sr"><div class="sr-ico">🔔</div><div class="sr-txt"><div class="sr-ttl" id="sNotif">Prayer Notifications</div></div><label class="tgl"><input type="checkbox" id="ntTgl" onchange="toggleNotif()"><div class="tgl-s"></div></label></div>
       <div class="sr"><div class="sr-ico">🕐</div><div class="sr-txt"><div class="sr-ttl" id="sFmt">12-Hour Format</div></div><label class="tgl"><input type="checkbox" id="fmTgl" onchange="saveSt()" checked><div class="tgl-s"></div></label></div>
       <div class="sr"><div class="sr-ico">📍</div><div class="sr-txt"><div class="sr-ttl" id="sSavedC">Saved City</div><div style="font-size:11px;color:var(--text3);margin-top:2px;" id="sSavedV">None</div></div><button class="rst-btn" onclick="clearCity()" style="font-size:11px;padding:6px 10px" id="clrBtn">Clear</button></div>
+    </div>
+
+    <!-- GPS + Manual Village Name -->
+    <div class="card" style="margin-bottom:11px;">
+      <div class="ch">
+        <div class="ch-ico b">📡</div>
+        <div class="ch-txt">
+          <div class="ch-title" id="gpsSettingTitle">GPS Location & Village Name</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="gpsSettingNote">
+            GPS captures coordinates only. Enter your village name manually.
+          </div>
+        </div>
+      </div>
+      <div style="padding:4px 15px 14px;">
+
+        <!-- Note/Tooltip -->
+        <div style="background:var(--gold-bg);border:1px solid rgba(180,130,0,.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gold);line-height:1.7;" id="gpsNoteBox">
+          💡 GPS صرف آپ کی location capture کرے گا۔ اپنے گاؤں کا نام دستی طور پر درج کریں تاکہ ہمیشہ درست نام ظاہر ہو۔ Nearby villages یا landmarks interfere نہیں کریں گے۔
+        </div>
+
+        <!-- GPS Capture Button -->
+        <button onclick="captureGPSCoords()" id="gpsCaptureBtn"
+          style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:var(--r);color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span>📡</span><span id="gpsCaptureText">Capture GPS Coordinates</span>
+        </button>
+
+        <!-- Captured Coordinates Display -->
+        <div id="gpsCoordsDisplay" style="display:none;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text2);font-family:monospace;line-height:1.8;">
+          <div>📍 <span id="gpsLatDisplay">—</span></div>
+          <div>📍 <span id="gpsLonDisplay">—</span></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;" id="gpsAccDisplay"></div>
+        </div>
+
+        <!-- Manual Village Name -->
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;" id="villageNameLabel">
+          Village / Area Name (Manual Entry)
+        </div>
+        <input type="text" id="villageNameInput"
+          placeholder="e.g. Qalandarabad, Abbottabad"
+          style="width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--solid);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border2)'"
+          oninput="onVillageNameInput(this.value)">
+
+        <!-- Save Button -->
+        <button onclick="saveGPSWithVillageName()"
+          style="width:100%;padding:11px;background:linear-gradient(135deg,var(--green),#0a5a0a);border:none;border-radius:var(--r);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">
+          ✅ <span id="saveGPSBtnText">Save Location</span>
+        </button>
+
+        <div id="gpsSaveStatus" style="font-size:11px;text-align:center;margin-top:8px;min-height:16px;"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:11px">
       <!-- Calculation Method -->
       <div class="sr" style="flex-direction:column;align-items:flex-start;gap:10px;">
         <div style="display:flex;align-items:center;gap:10px;width:100%;">
@@ -1170,6 +1219,7 @@ function init(){
   updateMethodUI();
   renderFeatures();
   startClock();setupPWA();
+  loadGPSSettings();
   // Auto schedule notifications if previously enabled
   if(S.notif && Notification.permission==='granted'){
     setTimeout(scheduleNotifications, 1000);
@@ -1184,17 +1234,176 @@ function startClock(){updateClock();setInterval(updateClock,1000);}
 // ══════════════════════════════════════════════════
 // AUTO LOCATION — خودکار مقام کا تعین
 // ══════════════════════════════════════════════════
+// GPS CAPTURE + MANUAL VILLAGE NAME SYSTEM
+// ══════════════════════════════════════════════════
 let _watchId=null;
 let _lastAutoLat=null;
 let _lastAutoLon=null;
 let _locActive=false;
+let _capturedLat=null;
+let _capturedLon=null;
 
-function requestAutoLocation(){
-  // Check if geolocation is available
+// Load saved GPS + village name on init
+function loadGPSSettings(){
+  try{
+    const g=JSON.parse(localStorage.getItem('smGPS')||'null');
+    if(!g) return;
+    // Restore village name input
+    const inp=document.getElementById('villageNameInput');
+    if(inp&&g.villageName) inp.value=g.villageName;
+    // Restore coords display
+    if(g.lat&&g.lon){
+      _capturedLat=g.lat; _capturedLon=g.lon;
+      showCoordsDisplay(g.lat,g.lon,null);
+    }
+    // If GPS was the active city, restore it
+    if(S.city==='__gps__'&&g.lat&&g.lon){
+      const name=g.villageName||'GPS Location';
+      C['__gps__']=[g.lat,g.lon,0,0,name];
+    }
+  }catch(e){}
+}
+
+// Capture GPS coordinates only (no automatic name fetching)
+function captureGPSCoords(){
   if(!navigator.geolocation){
-    showLocStatus(S.lang==='ur'?'❌ GPS دستیاب نہیں':'❌ GPS not available','#c42b1c');
+    setGPSStatus(S.lang==='ur'?'❌ GPS دستیاب نہیں':'❌ GPS not supported','#c42b1c');
     return;
   }
+  const btn=document.getElementById('gpsCaptureBtn');
+  const txt=document.getElementById('gpsCaptureText');
+  if(btn) btn.style.opacity='0.7';
+  if(txt) txt.textContent=S.lang==='ur'?'GPS سگنل لیا جا رہا ہے...':'Getting GPS signal...';
+  setGPSStatus('⏳ Locating...','#0078d4');
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      if(btn){btn.style.opacity='1';}
+      if(txt) txt.textContent=S.lang==='ur'?'GPS Coordinates حاصل کریں':'Capture GPS Coordinates';
+      _capturedLat=pos.coords.latitude;
+      _capturedLon=pos.coords.longitude;
+      showCoordsDisplay(_capturedLat,_capturedLon,pos.coords.accuracy);
+      setGPSStatus('✅ Coordinates captured! Enter your village name below.','#107c10');
+      // Focus village name input
+      const inp=document.getElementById('villageNameInput');
+      if(inp) setTimeout(()=>inp.focus(),300);
+    },
+    err=>{
+      if(btn) btn.style.opacity='1';
+      if(txt) txt.textContent=S.lang==='ur'?'GPS Coordinates حاصل کریں':'Capture GPS Coordinates';
+      const msgs={
+        1:'❌ Permission denied — allow Location in settings',
+        2:'❌ GPS signal unavailable — enable GPS',
+        3:'❌ Timeout — try again'
+      };
+      setGPSStatus(msgs[err.code]||'❌ GPS error','#c42b1c');
+    },
+    {enableHighAccuracy:true,timeout:20000,maximumAge:0}
+  );
+}
+
+function showCoordsDisplay(lat,lon,acc){
+  const box=document.getElementById('gpsCoordsDisplay');
+  const latEl=document.getElementById('gpsLatDisplay');
+  const lonEl=document.getElementById('gpsLonDisplay');
+  const accEl=document.getElementById('gpsAccDisplay');
+  if(box) box.style.display='block';
+  if(latEl) latEl.textContent='Latitude:  '+lat.toFixed(6)+'°';
+  if(lonEl) lonEl.textContent='Longitude: '+lon.toFixed(6)+'°';
+  if(accEl&&acc) accEl.textContent='Accuracy: ±'+Math.round(acc)+' meters';
+}
+
+function onVillageNameInput(val){
+  // Live preview in status
+  if(val.trim()){
+    setGPSStatus('📝 "'+val.trim()+'" — click Save to apply','#0078d4');
+  }
+}
+
+// Save GPS + Manual village name
+function saveGPSWithVillageName(){
+  const inp=document.getElementById('villageNameInput');
+  const villageName=(inp?inp.value:'').trim();
+
+  if(!villageName){
+    setGPSStatus(S.lang==='ur'
+      ?'❌ براہ کرم گاؤں کا نام درج کریں'
+      :'❌ Please enter your village/area name','#c42b1c');
+    if(inp) inp.focus();
+    return;
+  }
+
+  if(!_capturedLat||!_capturedLon){
+    setGPSStatus(S.lang==='ur'
+      ?'❌ پہلے GPS Coordinates حاصل کریں'
+      :'❌ Please capture GPS coordinates first','#c42b1c');
+    return;
+  }
+
+  const GPS_KEY='__gps__';
+
+  // Save to memory
+  C[GPS_KEY]=[_capturedLat,_capturedLon,0,0,villageName];
+
+  // Save to localStorage
+  try{
+    localStorage.setItem('smGPS',JSON.stringify({
+      lat:_capturedLat,
+      lon:_capturedLon,
+      villageName:villageName
+    }));
+  }catch(e){}
+
+  // Add/update in dropdown
+  const sel=document.getElementById('citySelect');
+  if(sel){
+    for(let i=sel.options.length-1;i>=0;i--){
+      if(sel.options[i].value===GPS_KEY) sel.remove(i);
+    }
+    const opt=document.createElement('option');
+    opt.value=GPS_KEY;
+    opt.textContent='📡 '+villageName;
+    opt.style.fontWeight='700';
+    sel.insertBefore(opt,sel.options[1]||null);
+    sel.value=GPS_KEY;
+  }
+
+  // Set as active
+  S.city=GPS_KEY;
+  svS();
+  updatePT();
+  updateQibla();
+  renderMonth();
+  updateSaved();
+  scheduleIfEnabled();
+
+  // Show success
+  setGPSStatus('✅ Saved! "'+villageName+'" is now your location.','#107c10');
+
+  // Update hero
+  setText('hCityEn', villageName);
+
+  // Button feedback
+  const btn=document.querySelector('button[onclick="saveGPSWithVillageName()"]');
+  if(btn){
+    const orig=btn.innerHTML;
+    btn.innerHTML='✅ Saved!';
+    setTimeout(()=>{btn.innerHTML=orig;},2000);
+  }
+}
+
+function setGPSStatus(msg,color){
+  const el2=document.getElementById('gpsSaveStatus');
+  if(!el2) return;
+  el2.style.color=color||'var(--text3)';
+  el2.textContent=msg;
+}
+
+// Keep old showLocStatus for any remaining calls
+function showLocStatus(msg,color){setGPSStatus(msg,color);}
+
+// requestAutoLocation — now only used internally, not from UI
+function requestAutoLocation(){}
 
   // Check if HTTPS or localhost (required for geolocation)
   const proto=location.protocol;
@@ -1677,8 +1886,19 @@ function applyLang(){
   setText('lbl6', t('t6'));
   setText('lbl7', t('t7'));
   setText('cityLbl', t('city'));
-  const alt=document.getElementById('autoLocTxt');
-  if(alt) alt.textContent=S.lang==='ur'?'خودکار مقام':'Auto Detect Location';
+  // GPS settings texts
+  const gst=document.getElementById('gpsSettingTitle');
+  if(gst) gst.textContent=S.lang==='ur'?'GPS اور گاؤں کا نام':'GPS Location & Village Name';
+  const vnl=document.getElementById('villageNameLabel');
+  if(vnl) vnl.textContent=S.lang==='ur'?'گاؤں / علاقے کا نام (دستی)':'Village / Area Name (Manual Entry)';
+  const gct=document.getElementById('gpsCaptureText');
+  if(gct) gct.textContent=S.lang==='ur'?'GPS Coordinates حاصل کریں':'Capture GPS Coordinates';
+  const sgb=document.getElementById('saveGPSBtnText');
+  if(sgb) sgb.textContent=S.lang==='ur'?'محفوظ کریں':'Save Location';
+  const gnb=document.getElementById('gpsNoteBox');
+  if(gnb) gnb.innerHTML=S.lang==='ur'
+    ?'💡 GPS صرف آپ کی location capture کرے گا۔ اپنے گاؤں کا نام دستی طور پر درج کریں تاکہ ہمیشہ درست نام ظاہر ہو۔ Nearby villages یا landmarks interfere نہیں کریں گے۔'
+    :'💡 GPS will only capture your coordinates. Enter your village name manually so the correct name always appears. Nearby villages or landmarks will not interfere.';
   setText('ptLbl', t('pt'));
   setText('qiblaLbl', t('qibla'));
   setText('mnthLbl', t('monthly'));
