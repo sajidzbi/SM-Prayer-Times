@@ -1321,99 +1321,74 @@ function useGPSLocation(lat, lon, acc){
   );
 }
 
-// Reverse geocoding — exact area/village/neighbourhood name
-// Called every time GPS updates — shows precise current location
+// Reverse geocoding — exact GPS location name (Google Maps level precision)
 function getCityName(lat, lon){
   const GPS_KEY='__gps__';
 
-  // Always try Nominatim first for exact area name
-  // zoom=16 gives neighbourhood/village level precision
+  // zoom=18 = building/street level (most precise Nominatim supports)
   fetch(
     `https://nominatim.openstreetmap.org/reverse`+
-    `?lat=${lat}&lon=${lon}&format=json&zoom=16&addressdetails=1&accept-language=en`,
-    {
-      headers:{
-        'Accept':'application/json',
-        'User-Agent':'SMPrayerTimes/1.0 (Islamic prayer times app)'
-      }
-    }
+    `?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1&accept-language=en`,
+    {headers:{'User-Agent':'SMPrayerTimes/1.0'}}
   )
-  .then(r=>{
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  })
+  .then(r=>{ if(!r.ok) throw new Error(''); return r.json(); })
   .then(data=>{
     const addr = data.address || {};
 
-    // Build precise location name — from most specific to least specific
-    // Priority: neighbourhood > suburb > village > town > city > county > state
-    const specific =
-      addr.neighbourhood ||
-      addr.suburb        ||
-      addr.quarter       ||
-      addr.hamlet        ||
-      addr.village       ||
-      addr.town          ||
-      addr.city_district ||
-      addr.city          ||
+    // Exact location: most specific name available
+    // Same priority as Google Maps "What's here"
+    const exact =
+      addr.hamlet        ||  // چھوٹا گاؤں
+      addr.neighbourhood ||  // محلہ
+      addr.suburb        ||  // ضلع
+      addr.quarter       ||  // علاقہ
+      addr.village       ||  // گاؤں
+      addr.town          ||  // قصبہ
+      addr.city_district ||  // شہر ضلع
+      addr.city          ||  // شہر
+      addr.municipality  ||
       addr.county        ||
       addr.state_district||
       addr.state         ||
-      null;
+      'GPS Location';
 
-    // Build full display name with parent area for context
-    let displayName = '';
-    if(specific){
-      // Add parent for context (e.g. "Qalandarabad, Abbottabad")
-      const parent =
-        addr.city         ||
-        addr.town         ||
-        addr.county       ||
-        addr.state_district||
-        addr.state        ||
-        '';
-      displayName = specific;
-      if(parent && parent !== specific){
-        displayName += ', ' + parent;
-      }
-    } else {
-      displayName = data.display_name
-        ? data.display_name.split(',').slice(0,2).join(',')
-        : 'GPS Location';
-    }
+    // Parent context (one level up)
+    const parent =
+      (exact !== addr.village       && addr.village)       ||
+      (exact !== addr.town          && addr.town)          ||
+      (exact !== addr.city          && addr.city)          ||
+      (exact !== addr.county        && addr.county)        ||
+      (exact !== addr.state_district&& addr.state_district)||
+      '';
 
-    // Update in-memory city record
+    const displayName = parent ? `${exact}, ${parent}` : exact;
+
+    // Update everything
     C[GPS_KEY][4] = displayName;
+    setText('hCityEn', displayName);
 
-    // Update hero display
-    setText('hCityEn', S.lang==='ur' ? displayName : displayName);
-
-    // Update dropdown option text
-    const sel = document.getElementById('citySelect');
+    // Update dropdown
+    const sel=document.getElementById('citySelect');
     if(sel){
       for(let i=0;i<sel.options.length;i++){
         if(sel.options[i].value===GPS_KEY){
-          sel.options[i].textContent = '📡 '+displayName;
-          break;
+          sel.options[i].textContent='📡 '+displayName; break;
         }
       }
     }
 
-    // Save updated name
+    // Save name
     try{
-      const gps=JSON.parse(localStorage.getItem('smGPS')||'{}');
-      gps.name=displayName;
-      localStorage.setItem('smGPS',JSON.stringify(gps));
+      const g=JSON.parse(localStorage.getItem('smGPS')||'{}');
+      g.name=displayName;
+      localStorage.setItem('smGPS',JSON.stringify(g));
     }catch(e){}
 
     showLocStatus('📍 '+displayName,'#107c10');
   })
   .catch(()=>{
-    // Offline fallback — use coordinates (prayer times still work!)
-    const fallback = lat.toFixed(4)+'°N, '+lon.toFixed(4)+'°E';
-    C[GPS_KEY][4] = 'GPS Location';
-    setText('hCityEn', 'GPS Location');
-    showLocStatus('📡 '+fallback+' (offline)','#0078d4');
+    // Offline — coordinates shown, prayer times still correct
+    showLocStatus('📡 '+lat.toFixed(5)+'°N '+lon.toFixed(5)+'°E','#0078d4');
   });
 }
 
