@@ -581,7 +581,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           Village / Area Name (Manual Entry)
         </div>
         <input type="text" id="villageNameInput"
-          placeholder="e.g. Zarobi, Swabi"
+          placeholder="e.g. Qalandarabad, Abbottabad"
           style="width:100%;padding:11px 12px;border:1.5px solid var(--border2);border-radius:var(--r);background:var(--solid);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;"
           onfocus="this.style.borderColor='var(--accent)'"
           onblur="this.style.borderColor='var(--border2)'"
@@ -639,33 +639,41 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             </div>
           </div>
 
-          <!-- Developer Card -->
-          <div style="background:var(--bg2);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;">Developer — بنانے والا</div>
-            <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-              <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#0078d4,#005a9e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,120,212,.3);">👤</div>
+          <!-- Developer Card — Enhanced -->
+          <div style="background:linear-gradient(135deg,var(--bg2) 0%,var(--solid) 100%);border-radius:14px;padding:0;margin-bottom:14px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.06);">
+
+            <!-- Header strip -->
+            <div style="background:linear-gradient(90deg,#0078d4,#005a9e);padding:10px 16px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.8);">Developer — بنانے والا</div>
+            </div>
+
+            <!-- Profile -->
+            <div style="padding:16px 16px 14px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);">
+              <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0078d4,#003d7a);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:0 4px 14px rgba(0,120,212,.35);">👤</div>
               <div>
-                <div style="font-size:18px;font-weight:800;color:var(--text);">Dr. Sajid Mahmood</div>
-                <div id="devRole" style="font-size:14px;font-weight:700;color:var(--accent);margin-top:3px;">Assistant Professor</div>
-                <div id="devUni" style="font-size:13px;font-weight:600;color:var(--text2);margin-top:2px;">Hazara University, Mansehra</div>
+                <div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:.2px;">Dr. Sajid Mahmood</div>
+                <div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:3px;">Dept. of Islamic &amp; Religious Studies</div>
+                <div style="font-size:12px;color:var(--text2);font-weight:600;margin-top:2px;">Hazara University, Mansehra</div>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
-              <a href="tel:03009080730" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;">
-                <div style="width:34px;height:34px;background:var(--green-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📞</div>
+
+            <!-- Contact rows -->
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+              <a href="https://wa.me/923009080730" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;transition:opacity .2s;" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'">
+                <div style="width:36px;height:36px;background:#25d366;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">💬</div>
                 <div>
-                  <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Mobile</div>
-                  <div style="font-size:14px;font-weight:700;color:var(--green);">0300-9080730</div>
+                  <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">WhatsApp</div>
+                  <div style="font-size:14px;font-weight:700;color:#25d366;">0300-9080730</div>
                 </div>
-                <div style="margin-left:auto;font-size:14px;color:var(--text3);">›</div>
+                <div style="margin-left:auto;font-size:18px;color:var(--text3);">›</div>
               </a>
-              <a href="mailto:sajidzbi@gmail.com" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;">
-                <div style="width:34px;height:34px;background:var(--accent-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">✉️</div>
+              <a href="mailto:sajidzbi@gmail.com" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;transition:opacity .2s;" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'">
+                <div style="width:36px;height:36px;background:var(--accent-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">✉️</div>
                 <div>
                   <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Email</div>
                   <div style="font-size:14px;font-weight:700;color:var(--accent);">sajidzbi@gmail.com</div>
                 </div>
-                <div style="margin-left:auto;font-size:14px;color:var(--text3);">›</div>
+                <div style="margin-left:auto;font-size:18px;color:var(--text3);">›</div>
               </a>
             </div>
           </div>
@@ -673,9 +681,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <div style="margin-top:14px;">
             <div id="featTitle" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;text-align:center;">App Features</div>
             <div id="featGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            <!-- Timing note -->
-            <div id="timingNote" style="margin-top:12px;background:var(--gold-bg);border:1px solid rgba(180,130,0,.2);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--gold);line-height:1.7;text-align:right;font-family:var(--ur-font);direction:rtl;">
-              ⚠️ نوٹ: اوقات کا حساب مستند فلکیاتی اصولوں (18° Hanafi) پر ہے۔ مختلف ذرائع میں 2-5 منٹ کا فرق معمول ہے۔
+            <!-- Timing note - updated -->
+            <div id="timingNote" style="margin-top:12px;background:var(--gold-bg);border:1px solid rgba(180,130,0,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);line-height:1.8;text-align:right;font-family:var(--ur-font);direction:rtl;">
+              ⚠️ نوٹ: تمام نماز اوقات مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔
             </div>
           </div>
         </div>
@@ -1624,30 +1632,38 @@ function toggleLang(){S.lang=S.lang==='en'?'ur':'en';applyLang();if(S.city)updat
 function renderFeatures(){
   const isUr=S.lang==='ur';
   const feats=[
-    {ico:'🕐',en:'Prayer Times',        ur:'نماز کے اوقات',       bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'📴',en:'Fully Offline',       ur:'مکمل آف لائن',        bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
-    {ico:'🏙️',en:'500+ Cities',         ur:'500+ پاکستانی شہر',   bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
-    {ico:'🌐',en:'Urdu & English',      ur:'اردو اور انگریزی',    bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'🧭',en:'Qibla Direction',     ur:'قبلہ کی سمت',         bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
-    {ico:'🔄',en:'Date Converter',      ur:'تاریخ کنورٹر',        bg:'var(--accent-bg)',bc:'rgba(0,120,212,.15)',cl:'var(--accent)'},
-    {ico:'📌',en:'Custom City',         ur:'اپنا شہر ایڈ کریں',  bg:'var(--gold-bg)',  bc:'rgba(180,130,0,.15)',cl:'var(--gold)'},
-    {ico:'📲',en:'Install as App',      ur:'ہوم اسکرین شارٹ کٹ', bg:'var(--green-bg)', bc:'rgba(16,124,16,.15)',cl:'var(--green)'},
+    {ico:'🕐', en:'5 Prayer Times',        ur:'پانچ نماز اوقات',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
+    {ico:'🏙️', en:'500+ Pakistani Cities',  ur:'500+ پاکستانی شہر',     cl:'var(--gold)',    bg:'var(--gold-bg)',    bc:'rgba(180,130,0,.15)'},
+    {ico:'🧭', en:'Qibla Direction',        ur:'قبلہ کی سمت',            cl:'var(--green)',   bg:'var(--green-bg)',   bc:'rgba(16,124,16,.15)'},
+    {ico:'📴', en:'Works Offline',          ur:'آف لائن کام کرے',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
+    {ico:'🔄', en:'Date Converter',         ur:'تاریخ کنورٹر',           cl:'var(--gold)',    bg:'var(--gold-bg)',    bc:'rgba(180,130,0,.15)'},
+    {ico:'🌙', en:'Hijri Calendar',         ur:'ہجری کیلنڈر',            cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
+    {ico:'📅', en:'Monthly Prayer Table',   ur:'ماہانہ اوقات جدول',      cl:'var(--green)',   bg:'var(--green-bg)',   bc:'rgba(16,124,16,.15)'},
+    {ico:'📡', en:'GPS Location',           ur:'GPS مقام',               cl:'var(--gold)',    bg:'var(--gold-bg)',    bc:'rgba(180,130,0,.15)'},
+    {ico:'🔔', en:'Prayer Notifications',   ur:'نماز یاد دہانی',          cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
+    {ico:'🌐', en:'Urdu & English',         ur:'اردو اور انگریزی',        cl:'var(--green)',   bg:'var(--green-bg)',   bc:'rgba(16,124,16,.15)'},
+    {ico:'🌓', en:'Dark / Light Mode',      ur:'ڈارک / لائٹ موڈ',        cl:'var(--gold)',    bg:'var(--gold-bg)',    bc:'rgba(180,130,0,.15)'},
+    {ico:'📲', en:'Install as App',         ur:'ایپ انسٹال کریں',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
   ];
-  // Date Converter description
-  const cvDesc=isUr
-    ?'کسی بھی تاریخ کو ہجری↔عیسوی میں تبدیل کریں'
-    :'Convert any date: Gregorian↔Hijri (past & future)';
-
   const grid=document.getElementById('featGrid');
   if(!grid) return;
   grid.innerHTML=feats.map(f=>`
-    <div style="background:${f.bg};border:1px solid ${f.bc};border-radius:10px;padding:11px 10px;text-align:center;">
-      <div style="font-size:22px;margin-bottom:6px;">${f.ico}</div>
-      <div style="font-size:12px;font-weight:700;color:${f.cl};${isUr?'font-family:Noto Nastaliq Urdu,serif;':''}">${isUr?f.ur:f.en}</div>
-      ${f.ico==='🔄'?`<div style="font-size:9px;color:var(--text3);margin-top:3px;${isUr?'font-family:Noto Nastaliq Urdu,serif;':''}">${cvDesc}</div>`:''}
+    <div style="background:${f.bg};border:1px solid ${f.bc};border-radius:10px;padding:12px 10px;text-align:center;">
+      <div style="font-size:24px;margin-bottom:6px;">${f.ico}</div>
+      <div style="font-size:11px;font-weight:700;color:${f.cl};line-height:1.4;${isUr?'font-family:var(--ur-font);':''}">${isUr?f.ur:f.en}</div>
     </div>`).join('');
   const ft=document.getElementById('featTitle');
-  if(ft) ft.textContent=isUr?'خصوصیات':'App Features';
+  if(ft) ft.textContent=isUr?'ایپ کی خصوصیات':'App Features';
+  // Update timing note language
+  const tn=document.getElementById('timingNote');
+  if(tn){
+    tn.textContent=isUr
+      ?'⚠️ نوٹ: تمام نماز اوقات مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔'
+      :'⚠️ Note: All prayer times are calculated based on authenticated astronomical principles. A difference of 2 to 5 minutes with other sources is normal.';
+    tn.style.textAlign=isUr?'right':'left';
+    tn.style.direction=isUr?'rtl':'ltr';
+    tn.style.fontFamily=isUr?'var(--ur-font)':'inherit';
+  }
 }
 
 
@@ -1684,9 +1700,7 @@ function applyLang(){
   setText('clrBtn', t('clr'));
   setText('instTtl', t('inst'));
   setText('instSub', t('instS'));
-  // Developer info — ALWAYS English regardless of language
-  setText('devRole', 'Assistant Professor');
-  setText('devUni', 'Hazara University, Mansehra');
+  // Developer info — ALWAYS English, fixed in HTML
   setText('featTitle', t('featTitle'));
   setText('aboutSubtitle', isUr?'پاکستان نماز اوقات ایپ':'Pakistan Prayer Times App');
   const sel=el('citySelect');
@@ -2426,192 +2440,200 @@ self.addEventListener('fetch',e=>{
 
 <script>
 // ══════════════════════════════════════════════════
-// QIBLA COMPASS — مکمل compass system
+// QIBLA COMPASS — مکمل درست نظام
 // ══════════════════════════════════════════════════
-let _qiblaBrg=null;
-let _compassOn=false;
-let _smoothHeading=null;
-let _calibrating=false;
-const SMOOTH=0.15; // smoothing factor (lower = smoother but slower)
+let _qiblaBrg   = null;
+let _compassOn  = false;
+let _smoothH    = null;
+let _calibrating= false;
+let _absUsed    = false;
+let _initDone   = false;
+const SMOOTH    = 0.12;
 
+// ─── Bearing calculation ───────────────────────────
 function updateQibla(){
-  if(!S.city||!C[S.city]) return;
-  const [lat,lon]=C[S.city];
+  if(!S.city || !C[S.city]) return;
+  const [lat,lon] = C[S.city];
 
-  // Calculate Qibla bearing using Haversine/bearing formula
-  const lat1=lat*Math.PI/180;
-  const mLat=21.4225*Math.PI/180;
-  const dLon=(39.8262-lon)*Math.PI/180;
-  const y=Math.sin(dLon)*Math.cos(mLat);
-  const x=Math.cos(lat1)*Math.sin(mLat)-Math.sin(lat1)*Math.cos(mLat)*Math.cos(dLon);
-  _qiblaBrg=((Math.atan2(y,x)*180/Math.PI)+360)%360;
+  const φ1 = lat  * Math.PI/180;
+  const φ2 = 21.4225 * Math.PI/180;   // Makkah
+  const Δλ = (39.8262 - lon) * Math.PI/180;
 
-  // Update static display
-  const qd=document.getElementById('qDeg');
-  if(qd) qd.textContent=Math.round(_qiblaBrg)+'°';
-  const qc=document.getElementById('qCity');
-  if(qc) qc.textContent=S.city+' \u2192 Makkah al-Mukarramah';
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  _qiblaBrg = ((Math.atan2(y,x) * 180/Math.PI) + 360) % 360;
 
-  // Show static bearing on needle (before compass starts)
-  if(!_compassOn){
-    const nd=document.getElementById('qNeedle');
-    if(nd) nd.style.transform=`rotate(${_qiblaBrg}deg)`;
-    const qs=document.getElementById('qiblaStatus');
-    if(qs) qs.textContent=S.lang==='ur'?'Compass چالو کریں':'Tap button to start compass';
-  }
+  // Static display
+  const qd = document.getElementById('qDeg');
+  if(qd) qd.textContent = Math.round(_qiblaBrg) + '°';
+  const qc = document.getElementById('qCity');
+  if(qc) qc.textContent = (C[S.city][4]||S.city) + ' ← مکہ مکرمہ';
 
-  // Try to start compass automatically
-  initCompass();
+  // Static needle until compass starts
+  setNeedle(_qiblaBrg);
+  setStatus(S.lang==='ur' ? '⬇️ Compass چالو کرنے کے لیے بٹن دبائیں' : '⬇️ Press button to start compass');
+
+  // Only init once
+  if(!_initDone){ _initDone=true; initCompass(); }
 }
 
-function initCompass(){
-  if(_compassOn) return;
+// ─── Set needle rotation ──────────────────────────
+function setNeedle(deg){
+  const nd = document.getElementById('qNeedle');
+  if(nd) nd.style.transform = `rotate(${deg}deg)`;
+}
 
-  // iOS 13+ needs explicit permission
-  if(typeof DeviceOrientationEvent!=='undefined'&&
-     typeof DeviceOrientationEvent.requestPermission==='function'){
-    const pb=document.getElementById('compassPermBtn');
-    if(pb) pb.style.display='block';
-    const sb=document.getElementById('compassStartBtn');
-    if(sb) sb.style.display='none';
+function setStatus(msg, color){
+  const qs = document.getElementById('qiblaStatus');
+  if(qs){ qs.textContent=msg; if(color) qs.style.color=color; }
+}
+
+function setAccuracy(msg, color){
+  const qa = document.getElementById('qiblaAccuracy');
+  if(qa){ qa.textContent=msg; if(color) qa.style.color=color; }
+}
+
+// ─── Compass init ─────────────────────────────────
+function initCompass(){
+  // iOS 13+ — needs user gesture for permission
+  if(typeof DeviceOrientationEvent !== 'undefined' &&
+     typeof DeviceOrientationEvent.requestPermission === 'function'){
+    const pb = document.getElementById('compassPermBtn');
+    if(pb) pb.style.display = 'block';
+    const sb = document.getElementById('compassStartBtn');
+    if(sb) sb.style.display = 'none';
+    setStatus('🔒 iPhone: اوپر والے بٹن سے Permission دیں');
     return;
   }
 
-  // Android/others — try directly
-  if(typeof DeviceOrientationEvent!=='undefined'){
-    // Check if sensors are actually available
-    const handler=e=>{
-      if(e.alpha!==null){
-        window.removeEventListener('deviceorientation',handler);
-        // Sensors work!
-        _compassOn=true;
-        const sb=document.getElementById('compassStartBtn');
-        if(sb) sb.style.display='none';
-        window.addEventListener('deviceorientationabsolute',handleCompass,true);
-        window.addEventListener('deviceorientation',handleCompass,true);
-        const qs=document.getElementById('qiblaStatus');
-        if(qs) qs.textContent=S.lang==='ur'?'🧭 Compass فعال':'🧭 Compass active';
-      } else {
-        // No sensor data
-        window.removeEventListener('deviceorientation',handler);
-        showCompassFallback();
-      }
-    };
-    window.addEventListener('deviceorientation',handler,{once:false});
-    // If no event after 2s, show manual button
-    setTimeout(()=>{
-      if(!_compassOn) showCompassFallback();
-    },2500);
-  } else {
-    showCompassFallback();
-  }
+  // Android / others — show start button (user gesture needed in some browsers)
+  const sb = document.getElementById('compassStartBtn');
+  if(sb) sb.style.display = 'block';
+  setStatus(S.lang==='ur' ? '🧭 Compass چالو کریں' : '🧭 Tap to start compass');
 }
 
-function showCompassFallback(){
-  const sb=document.getElementById('compassStartBtn');
-  if(sb) sb.style.display='block';
-  const qs=document.getElementById('qiblaStatus');
-  if(qs) qs.textContent=S.lang==='ur'
-    ?'Compass شروع کرنے کے لیے بٹن دبائیں'
-    :'Press button to start compass';
-}
-
+// ─── Manual start (Android) ───────────────────────
 function startCompassManual(){
-  if(typeof DeviceOrientationEvent!=='undefined'){
-    _compassOn=true;
-    const sb=document.getElementById('compassStartBtn');
-    if(sb) sb.style.display='none';
-    window.addEventListener('deviceorientationabsolute',handleCompass,true);
-    window.addEventListener('deviceorientation',handleCompass,true);
-    const qs=document.getElementById('qiblaStatus');
-    if(qs) qs.textContent=S.lang==='ur'?'🧭 Compass فعال':'🧭 Compass active';
-  }
-}
+  if(_compassOn) return;
+  const sb = document.getElementById('compassStartBtn');
+  if(sb) sb.style.display = 'none';
 
-function requestCompassPermission(){
-  if(typeof DeviceOrientationEvent.requestPermission==='function'){
-    DeviceOrientationEvent.requestPermission().then(p=>{
-      if(p==='granted'){
-        _compassOn=true;
-        window.addEventListener('deviceorientationabsolute',handleCompass,true);
-        window.addEventListener('deviceorientation',handleCompass,true);
-        const pb=document.getElementById('compassPermBtn');
-        if(pb) pb.style.display='none';
-        const qs=document.getElementById('qiblaStatus');
-        if(qs) qs.textContent='🧭 Compass active';
-      } else {
-        const qs=document.getElementById('qiblaStatus');
-        if(qs) qs.textContent='❌ Permission denied';
-      }
-    }).catch(err=>{
-      const qs=document.getElementById('qiblaStatus');
-      if(qs) qs.textContent='❌ '+err.message;
-    });
-  }
-}
+  // Test if sensor fires
+  let fired = false;
+  const testHandler = (e) => {
+    fired = true;
+    window.removeEventListener('deviceorientation', testHandler);
+    if(e.alpha !== null){
+      activateCompass();
+    } else {
+      setStatus('❌ Compass sensor not available on this device', '#c42b1c');
+      if(sb) sb.style.display = 'block';
+    }
+  };
+  window.addEventListener('deviceorientation', testHandler, {once:true});
 
-function calibrateCompass(){
-  _calibrating=true;
-  _smoothHeading=null;
-  const qa=document.getElementById('qiblaAccuracy');
-  if(qa) qa.textContent='';
-  const qs=document.getElementById('qiblaStatus');
-  if(qs) qs.textContent=S.lang==='ur'
-    ?"🔄 موبائل کو ∞ شکل میں تین بار گھمائیں..."
-    :"🔄 Move phone in figure-8 pattern 3 times...";
+  // Fallback if no event fires in 3s
   setTimeout(()=>{
-    _calibrating=false;
-    if(qs) qs.textContent=S.lang==='ur'?'✅ Calibration مکمل':'✅ Calibration complete';
-  },5000);
+    if(!fired){
+      window.removeEventListener('deviceorientation', testHandler);
+      if(!_compassOn){
+        setStatus('❌ No compass sensor detected', '#c42b1c');
+        if(sb) sb.style.display = 'block';
+      }
+    }
+  }, 3000);
+
+  setStatus('⏳ Initializing compass...', '#0078d4');
 }
 
-let _absHeadingUsed=false;
+// ─── iOS permission ───────────────────────────────
+function requestCompassPermission(){
+  if(typeof DeviceOrientationEvent === 'undefined') return;
+  if(typeof DeviceOrientationEvent.requestPermission !== 'function'){
+    // Not iOS — just activate
+    activateCompass();
+    return;
+  }
+  DeviceOrientationEvent.requestPermission()
+    .then(result => {
+      if(result === 'granted'){
+        const pb = document.getElementById('compassPermBtn');
+        if(pb) pb.style.display = 'none';
+        activateCompass();
+      } else {
+        setStatus('❌ Permission denied. Enable in iPhone Settings > Privacy > Motion', '#c42b1c');
+      }
+    })
+    .catch(err => setStatus('❌ Error: ' + err.message, '#c42b1c'));
+}
+
+// ─── Activate listeners ───────────────────────────
+function activateCompass(){
+  if(_compassOn) return;
+  _compassOn = true;
+  _smoothH   = null;
+  _absUsed   = false;
+
+  window.addEventListener('deviceorientationabsolute', handleCompass, true);
+  window.addEventListener('deviceorientation',         handleCompass, true);
+
+  setStatus('🧭 Compass فعال — موبائل سیدھا رکھ کر گھمائیں', '#107c10');
+  setAccuracy('', '');
+}
+
+// ─── Calibration ─────────────────────────────────
+function calibrateCompass(){
+  _calibrating = true;
+  _smoothH     = null;
+  setAccuracy('', '');
+  setStatus('🔄 ∞ شکل میں 3 بار گھمائیں (5 seconds)...', '#b8860b');
+  setTimeout(()=>{
+    _calibrating = false;
+    setStatus('✅ Calibration مکمل', '#107c10');
+  }, 5000);
+}
+
+// ─── Main compass handler ─────────────────────────
 function handleCompass(e){
-  if(_qiblaBrg===null||_calibrating) return;
+  if(_qiblaBrg === null || _calibrating) return;
 
-  let heading=null;
+  let heading = null;
 
-  // Priority: absolute orientation > iOS webkit > regular orientation
-  if(e.type==='deviceorientationabsolute'&&e.absolute===true&&e.alpha!=null){
-    heading=(360-e.alpha+360)%360;
-    _absHeadingUsed=true;
-  } else if(e.webkitCompassHeading!=null){
-    // iOS — provides true north directly
-    heading=e.webkitCompassHeading;
-    _absHeadingUsed=true;
-  } else if(!_absHeadingUsed&&e.alpha!=null){
-    // Android non-absolute fallback
-    heading=(360-e.alpha+360)%360;
-    // Apply magnetic declination (~2.5° for Pakistan)
-    heading=(heading+2.5+360)%360;
+  if(e.type === 'deviceorientationabsolute' && e.absolute === true && e.alpha != null){
+    // Best: absolute orientation (Android 7+)
+    heading  = (360 - e.alpha + 360) % 360;
+    _absUsed = true;
+  } else if(e.webkitCompassHeading != null){
+    // iOS: already true north
+    heading  = e.webkitCompassHeading;
+    _absUsed = true;
+  } else if(!_absUsed && e.alpha != null){
+    // Fallback: relative orientation
+    heading = (360 - e.alpha + 360) % 360;
+    heading = (heading + 2.5 + 360) % 360; // magnetic declination Pakistan
   }
 
-  if(heading===null) return;
+  if(heading === null) return;
 
-  // Low-pass filter for smooth rotation
-  if(_smoothHeading===null){
-    _smoothHeading=heading;
+  // Low-pass filter
+  if(_smoothH === null){
+    _smoothH = heading;
   } else {
-    let diff=heading-_smoothHeading;
-    // Handle 0°/360° wraparound
-    if(diff>180) diff-=360;
-    if(diff<-180) diff+=360;
-    _smoothHeading=(_smoothHeading+diff*SMOOTH+360)%360;
+    let d = heading - _smoothH;
+    if(d >  180) d -= 360;
+    if(d < -180) d += 360;
+    _smoothH = (_smoothH + d * SMOOTH + 360) % 360;
   }
 
-  // Rotate needle: qibla bearing relative to device heading
-  const rotation=(_qiblaBrg-_smoothHeading+360)%360;
-  const nd=document.getElementById('qNeedle');
-  if(nd) nd.style.transform=`rotate(${rotation}deg)`;
+  // Rotate needle toward Qibla
+  const rotation = (_qiblaBrg - _smoothH + 360) % 360;
+  setNeedle(rotation);
 
-  // Show accuracy message
-  const qa=document.getElementById('qiblaAccuracy');
-  if(qa){
-    const diff=Math.min(rotation,360-rotation);
-    if(diff<10) qa.textContent='✅ قبلہ رو ہیں!';
-    else if(diff<25) qa.textContent='↻ تھوڑا اور مڑیں';
-    else qa.textContent=`${Math.round(_qiblaBrg)}° North سے`;
-  }
+  // Accuracy feedback
+  const diff = Math.min(rotation, 360 - rotation);
+  if     (diff < 8 ) setAccuracy('✅ قبلہ رو ہیں!',    '#107c10');
+  else if(diff < 20) setAccuracy('↻ تھوڑا اور مڑیں',  '#b8860b');
+  else               setAccuracy(Math.round(_qiblaBrg) + '° (North سے)', 'var(--text3)');
 }
 </script>
 </body>
