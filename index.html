@@ -297,8 +297,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="qw">
         <div class="cr">
           <div class="ci">
-            <span class="cn n">E</span><span class="cn s">W</span>
-            <span class="cn e">N</span><span class="cn w">S</span>
             <div class="qn" id="qNeedle"></div>
             <div class="qcd"></div>
           </div>
@@ -667,11 +665,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
                 </div>
                 <div style="margin-left:auto;font-size:18px;color:var(--text3);">›</div>
               </a>
-              <a href="mailto:sajidzbi@gmail.com" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;transition:opacity .2s;" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'">
+              <a href="/cdn-cgi/l/email-protection#ee9d8f84878a948c87ae89838f8782c08d8183" style="display:flex;align-items:center;gap:12px;text-decoration:none;background:var(--solid);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;transition:opacity .2s;" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'">
                 <div style="width:36px;height:36px;background:var(--accent-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">✉️</div>
                 <div>
                   <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Email</div>
-                  <div style="font-size:14px;font-weight:700;color:var(--accent);">sajidzbi@gmail.com</div>
+                  <div style="font-size:14px;font-weight:700;color:var(--accent);"><span class="__cf_email__" data-cfemail="f685979c9f928c949fb6919b979f9ad895999b">[email&#160;protected]</span></div>
                 </div>
                 <div style="margin-left:auto;font-size:18px;color:var(--text3);">›</div>
               </a>
@@ -693,7 +691,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════════════
 // CITY DATA  [lat, lon, fajr_off, isha_off, urdu]
 // ══════════════════════════════════════════════════
@@ -2631,9 +2629,9 @@ function handleCompass(e){
 
   // Accuracy feedback
   const diff = Math.min(rotation, 360 - rotation);
-  if     (diff < 8 ) setAccuracy('✅ قبلہ رو ہیں!',    '#107c10');
-  else if(diff < 20) setAccuracy('↻ تھوڑا اور مڑیں',  '#b8860b');
-  else               setAccuracy(Math.round(_qiblaBrg) + '° (North سے)', 'var(--text3)');
+  if     (diff < 8 ) setAccuracy('✅ Qibla! قبلہ', '#107c10');
+  else if(diff < 20) setAccuracy('🟡 قریب ہے...', '#b8860b');
+  else               setAccuracy('🔴 گھمائیں', '#c42b1c');
 }
 </script>
 </body>
