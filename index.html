@@ -1488,7 +1488,7 @@ function updatePT(){
   const [lat,lon,fo,io,ur]=C[S.city];
   const times=calcTimes(lat,lon,new Date(),fo,io);
   window._PT=times;
-  setText('hCityEn', S.lang==='ur' ? ur : S.city);
+  setText('hCityEn', S.city==='__gps__' ? ur : (S.lang==='ur' ? ur : S.city));
   setText('hCityUr', '');
   const prayers=[
     {k:'fajr',   dot:'pd-fajr',    en:'Fajr',        ur:'فجر',              m:times.fajr},
