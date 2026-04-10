@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SM Prayer Times | نماز اوقات</title>
+<title>SM Prayer Times | اوقاتِ نماز</title>
 <meta name="application-name" content="SM Prayer Times">
 <meta name="apple-mobile-web-app-title" content="SM Prayer Times">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -681,7 +681,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             <div id="featGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             <!-- Timing note - updated -->
             <div id="timingNote" style="margin-top:12px;background:var(--gold-bg);border:1px solid rgba(180,130,0,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);line-height:1.8;text-align:right;font-family:var(--ur-font);direction:rtl;">
-              ⚠️ نوٹ: تمام نماز اوقات مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔
+              ⚠️ نوٹ: تمام اوقاتِ نماز مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔
             </div>
           </div>
         </div>
@@ -1177,7 +1177,7 @@ const TR={
       t1:'اوقات',t2:'قبلہ',t3:'تسبیح',t4:'ماہانہ',t5:'ترتیبات',t6:'ہجری',t7:'+شہر',
       city:'اپنا شہر چنیں',cityUr:'شہر منتخب کریں',
       pt:'نماز کے اوقات',ptUr:'پاکستان — حنفی طریقہ',
-      qibla:'قبلہ کی سمت',monthly:'ماہانہ نماز اوقات',set:'ترتیبات',
+      qibla:'قبلہ کی سمت',monthly:'ماہانہ اوقاتِ نماز',set:'ترتیبات',
       dark:'رات کا موڈ',notif:'اذان کی یاد دہانی',fmt:'بارہ گھنٹے فارمیٹ',savedC:'محفوظ شہر',
       clr:'ہٹائیں',rounds:'چکر',rst:'ری سیٹ',
       inst:'SM Prayer Times انسٹال کریں',instS:'ہوم اسکرین شارٹ کٹ',choose:'-- شہر چنیں --',
@@ -1630,7 +1630,7 @@ function toggleLang(){S.lang=S.lang==='en'?'ur':'en';applyLang();if(S.city)updat
 function renderFeatures(){
   const isUr=S.lang==='ur';
   const feats=[
-    {ico:'🕐', en:'5 Prayer Times',        ur:'پانچ نماز اوقات',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
+    {ico:'🕐', en:'5 Prayer Times',        ur:'پانچ اوقاتِ نماز',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
     {ico:'🏙️', en:'500+ Pakistani Cities',  ur:'500+ پاکستانی شہر',     cl:'var(--gold)',    bg:'var(--gold-bg)',    bc:'rgba(180,130,0,.15)'},
     {ico:'🧭', en:'Qibla Direction',        ur:'قبلہ کی سمت',            cl:'var(--green)',   bg:'var(--green-bg)',   bc:'rgba(16,124,16,.15)'},
     {ico:'📴', en:'Works Offline',          ur:'آف لائن کام کرے',        cl:'var(--accent)',  bg:'var(--accent-bg)',  bc:'rgba(0,120,212,.15)'},
@@ -1656,7 +1656,7 @@ function renderFeatures(){
   const tn=document.getElementById('timingNote');
   if(tn){
     tn.textContent=isUr
-      ?'⚠️ نوٹ: تمام نماز اوقات مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔'
+      ?'⚠️ نوٹ: تمام اوقاتِ نماز مستند فلکیاتی اصولوں کی روشنی میں حساب کیے گئے ہیں۔ مختلف ذرائع میں 2 سے 5 منٹ تک کا فرق ممکن ہے۔'
       :'⚠️ Note: All prayer times are calculated based on authenticated astronomical principles. A difference of 2 to 5 minutes with other sources is normal.';
     tn.style.textAlign=isUr?'right':'left';
     tn.style.direction=isUr?'rtl':'ltr';
@@ -1700,7 +1700,7 @@ function applyLang(){
   setText('instSub', t('instS'));
   // Developer info — ALWAYS English, fixed in HTML
   setText('featTitle', t('featTitle'));
-  setText('aboutSubtitle', isUr?'پاکستان نماز اوقات ایپ':'Pakistan Prayer Times App');
+  setText('aboutSubtitle', isUr?'پاکستان اوقاتِ نماز ایپ':'Pakistan Prayer Times App');
   const sel=el('citySelect');
   if(sel&&sel.options[0]) sel.options[0].textContent=t('choose');
   updateSaved();
