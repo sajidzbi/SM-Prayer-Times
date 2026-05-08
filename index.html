@@ -22,46 +22,10 @@
        local('Arabic Typesetting');
   unicode-range: U+0600-06FF, U+0750-077F;
 }
-
-/* ─── OFFLINE / ONLINE STATUS ─── */
-#net-status-bar{
-  position:fixed;top:0;left:0;right:0;z-index:8000;
-  padding:8px 16px;font-size:12px;font-weight:700;
-  text-align:center;letter-spacing:0.3px;
-  transform:translateY(-100%);transition:transform 0.35s ease;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-#net-status-bar.offline{
-  background:#c42b1c;color:#fff;
-  transform:translateY(0);
-}
-#net-status-bar.online-flash{
-  background:#107c10;color:#fff;
-  transform:translateY(0);
-}
-
-/* offline overlay on GPS button */
-.needs-net-btn{position:relative;}
-.needs-net-btn.net-disabled{opacity:0.55;cursor:not-allowed;}
-.needs-net-btn.net-disabled::after{
-  content:'📶 نیٹ درکار';
-  position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
-  font-size:10px;color:var(--red);white-space:nowrap;font-weight:700;
-}
-
-/* feature offline notice */
-.feature-offline-note{
-  display:none;background:var(--gold-bg);border:1px solid rgba(125,92,0,0.2);
-  border-radius:8px;padding:10px 12px;margin:10px 0;
-  font-size:12px;color:var(--gold);text-align:center;line-height:1.6;
-}
-.feature-offline-note.show{display:block;}
-
 </style>
 <style>
 /* Jameel Noori Nastaleeq with Noto fallback */
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none}
-input,textarea,select{-webkit-user-select:text!important;user-select:text!important}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --ur-font:'UrduFont','Noto Nastaliq Urdu','Jameel Noori Nastaleeq','Urdu Typesetting','Arabic Typesetting',serif;
   --bg:#f0f0f0;--bg2:#e5e5e5;--surface:rgba(255,255,255,0.78);--solid:#fff;
@@ -231,137 +195,57 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .about-box .a-note-ur{font-family:var(--ur-font);font-size:12px;color:var(--text3);margin-top:3px}
 
 @media(max-width:380px){.h-clock{font-size:24px}.h-city{font-size:17px}.cr{width:165px;height:165px}.ci{width:133px;height:133px}.qn{height:56px}}
+
+/* ─── USER SELECT PROTECTION ─── */
+*,*::before,*::after{-webkit-user-select:none!important;user-select:none!important}
+input,textarea,select{-webkit-user-select:text!important;user-select:text!important}
+
+/* ─── NETWORK STATUS BAR ─── */
+#net-bar{position:fixed;top:0;left:0;right:0;z-index:9000;
+  padding:7px 14px;font-size:11.5px;font-weight:700;text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transform:translateY(-100%);transition:transform 0.3s ease;pointer-events:none}
+#net-bar.offline{background:#c42b1c;color:#fff;transform:translateY(0)}
+#net-bar.online-ok{background:#107c10;color:#fff;transform:translateY(0)}
+
+/* ─── AUTO-UPDATE BANNER ─── */
+#upd-bar{position:fixed;bottom:70px;left:10px;right:10px;z-index:9000;
+  background:linear-gradient(135deg,#005a9e,#0078d4);border-radius:13px;
+  padding:12px 13px;display:none;align-items:center;gap:10px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.22);
+  transform:translateY(110px);opacity:0;pointer-events:none;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.35s ease}
+#upd-bar.show{transform:translateY(0);opacity:1;pointer-events:all;display:flex}
+.upd-ico{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.upd-txt{flex:1;min-width:0}
+.upd-ttl{font-weight:700;font-size:0.82rem;color:#fff}
+.upd-sub{font-size:0.68rem;color:rgba(255,255,255,0.65);margin-top:2px}
+.upd-btn{background:#fff;color:#005a9e;border:none;border-radius:7px;
+  padding:6px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.upd-close{background:transparent;border:none;color:rgba(255,255,255,0.7);
+  cursor:pointer;font-size:0.95rem;padding:2px 5px;flex-shrink:0}
+
 </style>
 </head>
 <body>
 
-<!-- ═══ NETWORK STATUS BAR ═══ -->
-<div id="net-status-bar">
-  <span id="net-status-icon">📵</span>
-  <span id="net-status-msg">آف لائن — نماز کے اوقات آف لائن چلتے رہیں گے</span>
+<!-- NETWORK STATUS BAR -->
+<div id="net-bar">
+  <span id="net-bar-ico">📵</span>
+  <span id="net-bar-msg">آف لائن — نماز اوقات، قبلہ، تسبیح آف لائن کام کریں گے</span>
 </div>
 
-<script>
-(function(){
-  // Disable right-click
-  document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
-  // Disable F12, Ctrl+Shift+I/J/C, Ctrl+U
-  document.addEventListener('keydown',function(e){
-    if(e.keyCode===123){e.preventDefault();return false;}
-    if(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67)){e.preventDefault();return false;}
-    if(e.ctrlKey&&e.keyCode===85){e.preventDefault();return false;}
-  });
-  // Disable text selection
-  document.addEventListener('selectstart',function(e){e.preventDefault();return false;});
-  // DevTools size detection
-  setInterval(function(){
-    var w=window.outerWidth-window.innerWidth>160;
-    var h=window.outerHeight-window.innerHeight>160;
-    if((w||h)&&document.body){
-      document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0078d4;color:#fff;font-family:serif;font-size:1.4rem;text-align:center;padding:20px">SM Prayer Times<br><span style="font-size:0.85rem;opacity:0.7;display:block;margin-top:8px">Unauthorized access detected</span></div>';
-    }
-  },1000);
-})();
-</script>
-
-<script>
-// ══════════════════════════════════════════════════
-// SMART OFFLINE / ONLINE SYSTEM
-// ══════════════════════════════════════════════════
-(function(){
-  var bar     = null;
-  var icon    = null;
-  var msg     = null;
-  var offTimer= null;
-  var onTimer = null;
-
-  function init(){
-    bar  = document.getElementById('net-status-bar');
-    icon = document.getElementById('net-status-icon');
-    msg  = document.getElementById('net-status-msg');
-    updateNetUI();
-  }
-
-  function isOnline(){ return navigator.onLine; }
-
-  function updateNetUI(){
-    if(!bar) return;
-    if(!isOnline()){
-      bar.className = 'offline';
-      if(icon) icon.textContent = '📵';
-      if(msg)  msg.textContent  = 'آف لائن — نماز اوقات، قبلہ، تسبیح آف لائن کام کریں گے';
-      setNetDependentFeatures(false);
-    } else {
-      bar.className = '';
-      bar.style.transform = 'translateY(-100%)';
-      setNetDependentFeatures(true);
-    }
-  }
-
-  // Features that WORK offline (no warning needed):
-  //   ✅ Prayer Times (local calculation)
-  //   ✅ Qibla (device compass — no net)
-  //   ✅ Tasbih counter
-  //   ✅ Monthly calendar
-  //   ✅ Hijri calendar
-  //   ✅ GPS coordinates (device GPS — no net)
-  //   ✅ Custom cities (saved locally)
-  //   ✅ Notifications (local scheduler)
-  //   ✅ Dark mode, language settings
-
-  // Features that NEED internet:
-  //   ⚠️  App auto-update (SW check)
-
-  function setNetDependentFeatures(online){
-    // GPS capture button — works offline (device GPS, no internet needed)
-    // but show notice if user is confused
-    var gpsNote = document.getElementById('offline-gps-note');
-    if(gpsNote){
-      if(!online){
-        gpsNote.classList.add('show');
-      } else {
-        gpsNote.classList.remove('show');
-      }
-    }
-  }
-
-  // Going offline
-  window.addEventListener('offline', function(){
-    clearTimeout(offTimer);
-    offTimer = setTimeout(function(){
-      updateNetUI();
-      // Vibrate once
-      if(navigator.vibrate) navigator.vibrate(100);
-    }, 500);
-  });
-
-  // Coming back online
-  window.addEventListener('online', function(){
-    clearTimeout(onTimer);
-    onTimer = setTimeout(function(){
-      if(bar){
-        bar.className = 'online-flash';
-        if(icon) icon.textContent = '✅';
-        if(msg)  msg.textContent  = 'انٹرنیٹ دوبارہ جڑ گیا — آپ آن لائن ہیں';
-        setNetDependentFeatures(true);
-        // Hide after 3s
-        setTimeout(function(){
-          bar.className = '';
-          bar.style.transform = 'translateY(-100%)';
-        }, 3000);
-      }
-    }, 800);
-  });
-
-  // Init on load
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-
-</script>
+<!-- AUTO-UPDATE BANNER -->
+<div id="upd-bar">
+  <div class="upd-ico">🔄</div>
+  <div class="upd-txt">
+    <div class="upd-ttl">نئی اپڈیٹ دستیاب ہے!</div>
+    <div class="upd-sub">SM Prayer Times has been updated</div>
+  </div>
+  <button class="upd-btn" onclick="doSWUpdate()">Update</button>
+  <button class="upd-close" onclick="closeUpdBar()">✕</button>
+</div>
 
 
 <div class="tb">
@@ -1773,7 +1657,6 @@ function switchTab(name,btn){
   document.querySelectorAll('.tp').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.tb2').forEach(b=>b.classList.remove('act'));
   const pane=document.getElementById('tab-'+name);
-  if(!pane) return;
   pane.classList.add('act');
   pane.classList.remove('fade-in');
   void pane.offsetWidth;
@@ -2169,13 +2052,13 @@ function setupPWA(){
   const url=URL.createObjectURL(blob);
   const lk=document.createElement('link');lk.rel='manifest';lk.href=url;
   document.head.appendChild(lk);
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dP=e;if(!localStorage.getItem('sm-pt-installed')){var b=document.getElementById('instBanner');if(b)b.classList.remove('hidden');}});
-  window.addEventListener('appinstalled',()=>{var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');dP=null;localStorage.setItem('sm-pt-installed','1');});
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dP=e;if(!localStorage.getItem('sm-installed')){var b=document.getElementById('instBanner');if(b)b.classList.remove('hidden');}});
+  window.addEventListener('appinstalled',()=>{var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');dP=null;localStorage.setItem('sm-installed','1');});
   // iOS
-  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone&&!localStorage.getItem('sm-pt-installed')){var ib=document.getElementById('instBanner');if(ib)ib.classList.remove('hidden');var ibt=document.getElementById('instBtn');if(ibt)ibt.textContent='Share → Add to Home';}
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone&&!localStorage.getItem('sm-installed')){var ib=document.getElementById('instBanner');if(ib)ib.classList.remove('hidden');var ibt=document.getElementById('instBtn');if(ibt)ibt.textContent='Share → Add to Home';}
 }
-function installApp(){if(dP){dP.prompt();dP.userChoice.then(()=>{dP=null;var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');localStorage.setItem('sm-pt-installed','1');});}}
-function dismissInst(){var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');localStorage.setItem('sm-pt-installed','1');}
+function installApp(){if(dP){dP.prompt();dP.userChoice.then(()=>{dP=null;var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');localStorage.setItem('sm-installed','1');});}}
+function dismissInst(){var b=document.getElementById('instBanner');if(b)b.classList.add('hidden');localStorage.setItem('sm-installed','1');}
 
 // Keyboard: space = tasbih tap
 // keyboard shortcut removed
@@ -2551,72 +2434,121 @@ window.addEventListener('DOMContentLoaded',init);
 // ══════════════════════════════════════════════════
 // SERVICE WORKER — مکمل آف لائن
 // ══════════════════════════════════════════════════
-// ══ AUTO-UPDATE SERVICE WORKER ══
-// ⚡ اپڈیٹ کے لیے صرف یہ نمبر بدلیں:
-var SM_APP_VERSION = 'sm-prayer-v2026.2';
+// SW handled below
 
-function showUpdBanner(){
-  var b=document.getElementById('upd-banner');
-  if(!b)return;
+// ══════════════════════════════════════════════════
+// CODE PROTECTION
+// ══════════════════════════════════════════════════
+(function(){
+  document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
+  document.addEventListener('keydown',function(e){
+    if(e.keyCode===123){e.preventDefault();return false;}
+    if(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67)){e.preventDefault();return false;}
+    if(e.ctrlKey&&e.keyCode===85){e.preventDefault();return false;}
+  });
+  document.addEventListener('selectstart',function(e){e.preventDefault();return false;});
+  setInterval(function(){
+    var w=window.outerWidth-window.innerWidth>160;
+    var h=window.outerHeight-window.innerHeight>160;
+    if((w||h)&&document.body){
+      document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0078d4;color:#fff;font-size:1.3rem;text-align:center;padding:20px">SM Prayer Times<br><small style="opacity:.6;font-size:.8rem;display:block;margin-top:8px">Unauthorized access detected</small></div>';
+    }
+  },1200);
+})();
+
+// ══════════════════════════════════════════════════
+// OFFLINE / ONLINE STATUS SYSTEM
+// ══════════════════════════════════════════════════
+(function(){
+  var _offTimer=null,_onTimer=null;
+  function _bar(){return document.getElementById('net-bar');}
+  function _ico(){return document.getElementById('net-bar-ico');}
+  function _msg(){return document.getElementById('net-bar-msg');}
+
+  function checkNet(){
+    var bar=_bar();if(!bar)return;
+    if(!navigator.onLine){
+      bar.className='offline';
+      var i=_ico(),m=_msg();
+      if(i)i.textContent='📵';
+      if(m)m.textContent='آف لائن — نماز اوقات، قبلہ، تسبیح آف لائن کام کریں گے';
+    } else {
+      bar.className='';
+    }
+  }
+
+  window.addEventListener('offline',function(){
+    clearTimeout(_offTimer);
+    _offTimer=setTimeout(checkNet,400);
+  });
+
+  window.addEventListener('online',function(){
+    clearTimeout(_onTimer);
+    _onTimer=setTimeout(function(){
+      var bar=_bar(),i=_ico(),m=_msg();
+      if(!bar)return;
+      bar.className='online-ok';
+      if(i)i.textContent='✅';
+      if(m)m.textContent='انٹرنیٹ جڑ گیا — آپ آن لائن ہیں';
+      setTimeout(function(){if(_bar())_bar().className='';},3000);
+    },600);
+  });
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',checkNet);
+  } else { checkNet(); }
+})();
+
+// ══════════════════════════════════════════════════
+// AUTO-UPDATE SYSTEM
+// ⚡ اپڈیٹ کے لیے صرف یہ نمبر بدلیں:
+var SM_VER = 'sm-prayer-v2026.1';
+// ══════════════════════════════════════════════════
+function showUpdBar(){
+  var b=document.getElementById('upd-bar');
+  if(!b||b.classList.contains('show'))return;
   b.style.display='flex';
-  setTimeout(function(){b.style.transform='translateY(0)';b.style.opacity='1';b.style.pointerEvents='all';},50);
+  setTimeout(function(){b.classList.add('show');},30);
 }
-function closeUpdBanner(){
-  var b=document.getElementById('upd-banner');
+function closeUpdBar(){
+  var b=document.getElementById('upd-bar');
   if(!b)return;
-  b.style.transform='translateY(100px)';b.style.opacity='0';b.style.pointerEvents='none';
-  setTimeout(function(){b.style.display='none';},400);
+  b.classList.remove('show');
+  setTimeout(function(){b.style.display='none';},420);
 }
 function doSWUpdate(){
-  closeUpdBanner();
+  closeUpdBar();
   setTimeout(function(){window.location.reload(true);},700);
 }
 
 if('serviceWorker' in navigator){
-  var isPreview=window.location.hostname.indexOf('claudeusercontent')!==-1||
-                window.location.hostname==='localhost'||
-                window.location.protocol==='blob:';
-  if(!isPreview){
-    var swCode='var CACHE="'+SM_APP_VERSION+'";'+
-    'self.addEventListener("install",function(e){self.skipWaiting();'+
-    'e.waitUntil(caches.open(CACHE).then(function(c){'+
-    'return fetch(self.registration.scope).then(function(r){if(r.ok)return c.put(self.registration.scope,r);}).catch(function(){});'+
-    '}));});'+
-    'self.addEventListener("activate",function(e){'+
-    'e.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));})'+
-    '.then(function(){return self.clients.claim();})'+
-    '.then(function(){return self.clients.matchAll({type:"window"}).then(function(clients){clients.forEach(function(c){c.postMessage({type:"APP_UPDATED",version:CACHE});});});}));});'+
-    'self.addEventListener("fetch",function(e){'+
-    'if(e.request.method!=="GET")return;'+
-    'e.respondWith('+
-    '  caches.match(e.request).then(function(cached){'+
-    '    if(cached) return cached;'+
-    '    return fetch(e.request).then(function(res){'+
-    '      if(res&&res.ok){var cl=res.clone();caches.open(CACHE).then(function(c){c.put(e.request,cl);});}'+
-    '      return res;'+
-    '    }).catch(function(){return new Response("Offline - SM Prayer Times works offline",{status:503,headers:{"Content-Type":"text/plain"}});});'+
-    '  })'+
-    ');'+
-    '});'';
+  var _isPreview=(window.location.hostname.indexOf('claudeusercontent')!==-1||
+                  window.location.protocol==='blob:');
+  if(!_isPreview){
+    var _swCode='var C="'+SM_VER+'";'+
+    'self.addEventListener("install",function(e){self.skipWaiting();e.waitUntil(caches.open(C).then(function(ca){return fetch(self.registration.scope).then(function(r){if(r.ok)return ca.put(self.registration.scope,r);}).catch(function(){});}));});'+
+    'self.addEventListener("activate",function(e){e.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.filter(function(k){return k!==C;}).map(function(k){return caches.delete(k);}));}).then(function(){return self.clients.claim();}).then(function(){return self.clients.matchAll({type:"window"}).then(function(clients){clients.forEach(function(cl){cl.postMessage({type:"APP_UPDATED",version:C});});});}));});'+
+    'self.addEventListener("fetch",function(e){if(e.request.method!=="GET")return;e.respondWith(caches.match(e.request).then(function(cached){if(cached)return cached;return fetch(e.request).then(function(res){if(res&&res.ok){var cl=res.clone();caches.open(C).then(function(ca){ca.put(e.request,cl);});}return res;}).catch(function(){return new Response("Offline",{status:503});});}));});';
     try{
-      var blob=new Blob([swCode],{type:'application/javascript'});
-      var swUrl=URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl,{scope:'./'})
+      var _blob=new Blob([_swCode],{type:'application/javascript'});
+      var _url=URL.createObjectURL(_blob);
+      navigator.serviceWorker.register(_url,{scope:'./'})
         .then(function(reg){
           reg.addEventListener('updatefound',function(){
             var nw=reg.installing;
             nw.addEventListener('statechange',function(){
-              if(nw.state==='installed'&&navigator.serviceWorker.controller){showUpdBanner();}
+              if(nw.state==='installed'&&navigator.serviceWorker.controller){showUpdBar();}
             });
           });
           setInterval(function(){reg.update();},60000);
         }).catch(function(){});
       navigator.serviceWorker.addEventListener('message',function(ev){
-        if(ev.data&&ev.data.type==='APP_UPDATED'){showUpdBanner();}
+        if(ev.data&&ev.data.type==='APP_UPDATED'){showUpdBar();}
       });
     }catch(e){}
   }
 }
+
 </script>
 
 <script>
@@ -2817,24 +2749,5 @@ function handleCompass(e){
   else               setAccuracy(Math.round(_qiblaBrg) + '° (North سے)', 'var(--text3)');
 }
 </script>
-
-<!-- AUTO-UPDATE BANNER -->
-<div id="upd-banner" style="display:none;position:fixed;bottom:72px;left:10px;right:10px;z-index:9999;
-  background:linear-gradient(135deg,#005a9e,#0078d4);border-radius:14px;padding:13px 14px;
-  display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,0.25);
-  transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1),opacity 0.35s ease;
-  transform:translateY(100px);opacity:0;pointer-events:none;flex-wrap:nowrap;">
-  <div style="width:38px;height:38px;background:rgba(255,255,255,0.18);border-radius:10px;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🔄</div>
-  <div style="flex:1;min-width:0">
-    <div style="font-weight:700;font-size:0.85rem;color:#fff">نئی اپڈیٹ دستیاب ہے!</div>
-    <div style="font-size:0.7rem;color:rgba(255,255,255,0.65);margin-top:2px">SM Prayer Times has been updated</div>
-  </div>
-  <button onclick="doSWUpdate()" style="background:#fff;color:#005a9e;border:none;border-radius:8px;
-    padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;flex-shrink:0">Update</button>
-  <button onclick="closeUpdBanner()" style="background:transparent;border:none;color:rgba(255,255,255,0.7);
-    cursor:pointer;font-size:1rem;padding:2px 6px;flex-shrink:0">✕</button>
-</div>
-
 </body>
 </html>
